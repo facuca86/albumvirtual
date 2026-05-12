@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 const teams = [
   'FWCI1',
@@ -98,10 +100,48 @@ Object.assign(teamData, completeTeamData);
 
 type ViewType = 'home' | 'teams' | 'album';
 
+const progressDocRef = doc(db, 'albumProgress', 'paniniWorldCup2026');
+
 export default function PaniniAlbum2026() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const isInitialLoad = useRef(true);
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        const progressSnap = await getDoc(progressDocRef);
+
+        if (progressSnap.exists()) {
+          const data = progressSnap.data();
+          if (data?.stickers && typeof data.stickers === 'object') {
+            setCompleted(data.stickers);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading album progress from Firestore:', error);
+      } finally {
+        isInitialLoad.current = false;
+      }
+    };
+
+    loadProgress();
+  }, []);
+
+  useEffect(() => {
+    const saveProgress = async () => {
+      if (isInitialLoad.current) return;
+
+      try {
+        await setDoc(progressDocRef, { stickers: completed });
+      } catch (error) {
+        console.error('Error saving album progress to Firestore:', error);
+      }
+    };
+
+    saveProgress();
+  }, [completed]);
 
   const currentTeam = teams[currentTeamIndex] || teams[0];
 
