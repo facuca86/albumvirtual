@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
+const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
+
 const teams = [
   'FWCI1',
   'FWCI2',
@@ -98,7 +100,7 @@ const completeTeamData = {
 
 Object.assign(teamData, completeTeamData);
 
-const progressDocRef = doc(db, 'albumProgress', 'paniniWorldCup2026');
+const progressDocRef = db ? doc(db, 'albumProgress', 'paniniWorldCup2026') : null;
 
 export default function PaniniAlbum2026() {
   const [currentView, setCurrentView] = useState('home');
@@ -109,12 +111,23 @@ export default function PaniniAlbum2026() {
   useEffect(() => {
     const loadProgress = async () => {
       try {
-        const progressSnap = await getDoc(progressDocRef);
+        if (progressDocRef) {
+          const progressSnap = await getDoc(progressDocRef);
 
-        if (progressSnap.exists()) {
-          const data = progressSnap.data();
-          if (data?.stickers && typeof data.stickers === 'object') {
-            setCompleted(data.stickers);
+          if (progressSnap.exists()) {
+            const data = progressSnap.data();
+            if (data?.stickers && typeof data.stickers === 'object') {
+              setCompleted(data.stickers);
+              return;
+            }
+          }
+        }
+
+        const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (localData) {
+          const parsed = JSON.parse(localData);
+          if (parsed && typeof parsed === 'object') {
+            setCompleted(parsed);
           }
         }
       } catch (error) {
@@ -132,9 +145,12 @@ export default function PaniniAlbum2026() {
       if (isInitialLoad.current) return;
 
       try {
-        await setDoc(progressDocRef, { stickers: completed });
+        if (progressDocRef) {
+          await setDoc(progressDocRef, { stickers: completed });
+        }
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(completed));
       } catch (error) {
-        console.error('Error saving album progress to Firestore:', error);
+        console.error('Error saving album progress:', error);
       }
     };
 
