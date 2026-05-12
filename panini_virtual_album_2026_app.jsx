@@ -239,7 +239,7 @@ export default function PaniniAlbum2026() {
     });
   }, [currentTeam, completed, stickerCount]);
 
-  const toggleSticker = (code: string) => {
+  const toggleSticker = (code) => {
     setCompleted((prev) => ({
       ...prev,
       [code]: !prev[code]
