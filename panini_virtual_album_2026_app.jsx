@@ -14,7 +14,7 @@ const teams = [
   'COCA'
 ];
 
-const teamData: Record<string, { name: string; federation: string; flag: string }> = {
+const teamData = {
   FWCI1: { name: 'FWC Intro', federation: 'Opening Section', flag: '🏆' },
   FWCI2: { name: 'FWC Intro', federation: 'Opening Section', flag: '🌎' },
   FWCH1: { name: 'FWC History', federation: 'World Champions', flag: '⭐' },
@@ -53,7 +53,7 @@ const teamData: Record<string, { name: string; federation: string; flag: string 
   TUN: { name: 'Túnez', federation: 'Fédération Tunisienne de Football', flag: '🇹🇳' }
 };
 
-const completeTeamData: Record<string, { name: string; federation: string; flag: string }> = {
+const completeTeamData = {
   ...teamData,
 
   RSA: { name: 'Sudáfrica', federation: 'South African Football Association', flag: '🇿🇦' },
@@ -98,14 +98,12 @@ const completeTeamData: Record<string, { name: string; federation: string; flag:
 
 Object.assign(teamData, completeTeamData);
 
-type ViewType = 'home' | 'teams' | 'album';
-
 const progressDocRef = doc(db, 'albumProgress', 'paniniWorldCup2026');
 
 export default function PaniniAlbum2026() {
-  const [currentView, setCurrentView] = useState<ViewType>('home');
+  const [currentView, setCurrentView] = useState('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
-  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const [completed, setCompleted] = useState({});
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -209,7 +207,7 @@ export default function PaniniAlbum2026() {
       } else if (currentTeam === 'COCA') {
         label = `Jugador ${id}`;
       } else if (currentTeam.startsWith('FWCH')) {
-        const historyLabels: Record<number, string> = {
+        const historyLabels = {
           1: 'Italia 1934',
           2: 'Uruguay 1950',
           3: 'Alemania 1954',
@@ -553,22 +551,9 @@ export default function PaniniAlbum2026() {
   );
 }
 
-type StickerProps = {
-  currentTeam?: string;
-  sticker: {
-    id: number;
-    code: string;
-    completed: boolean;
-    type: string;
-    label?: string;
-    horizontal?: boolean;
-  };
-  horizontal?: boolean;
-  onToggle: (code: string) => void;
-};
 
-function Sticker({ sticker, horizontal = false, onToggle, currentTeam }: StickerProps) {
-  const labels: Record<string, string> = {
+function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
+  const labels = {
     shield: 'Escudo',
     team: 'Foto Equipo'
   };
