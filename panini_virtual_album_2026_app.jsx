@@ -365,7 +365,7 @@ export default function PaniniAlbum2026() {
       {
         key: 'FWC_HISTORY',
         emoji: '🏆',
-        name: 'FWC HISTORY',
+        name: 'CAMPEONES',
         total: fwcHistoryCodes.length,
         completed: fwcHistoryCodes.filter((code) => completed[code]).length
       },
