@@ -320,6 +320,7 @@ export default function PaniniAlbum2026() {
 
   const completedCount = Object.values(completed).filter(Boolean).length;
   const completionPercent = Math.round((completedCount / 982) * 100);
+  const remainingCount = 980 - completedCount;
 
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
     ? ['FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
@@ -721,6 +722,8 @@ export default function PaniniAlbum2026() {
             <div className="space-y-3 font-black">
               <div>Figuritas completadas: {completedCount} / 980</div>
               <div>Porcentaje completado: {completionPercent}%</div>
+              <div>Me faltan: {remainingCount}</div>
+              <div>Brillantes: X / 68</div>
             </div>
             <button
               onClick={() => setShowStats(false)}
