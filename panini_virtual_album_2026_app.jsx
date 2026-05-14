@@ -695,18 +695,18 @@ export default function PaniniAlbum2026() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-[10px] sm:text-xs font-black uppercase leading-tight">
-                          <div>A: México • Suiza • Ghana • Nueva Zelanda</div>
-                          <div>B: Brasil • Croacia • Egipto • Canadá</div>
-                          <div>C: Argentina • Japón • Nigeria • Escocia</div>
-                          <div>D: Francia • Corea • Paraguay • Túnez</div>
-                          <div>E: España • Marruecos • Iraq • Noruega</div>
-                          <div>F: Inglaterra • Colombia • Austria • Haití</div>
-                          <div>G: Alemania • Ecuador • Arabia Saudita • Cabo Verde</div>
-                          <div>H: Portugal • Uruguay • Jordania • Curazao</div>
-                          <div>I: Estados Unidos • Bélgica • Uzbekistán • Panamá</div>
-                          <div>J: Turquía • Bosnia • Congo DR • Catar</div>
-                          <div>K: Italia • Senegal • República Checa • Argelia</div>
-                          <div>L: Países Bajos • Costa de Marfil • Australia • Irán</div>
+                          <div>A: México • Sudafrica • Republica de Corea • Republica Checa</div>
+                          <div>B: Canadá • Bosnia-Herzegovina • Catar • Suiza</div>
+                          <div>C: Brasil • Marruecos • Haití • Escocia</div>
+                          <div>D: Estados Unidos • Paraguay • Australia • Turquía</div>
+                          <div>E: Alemania • Curazao • Costa de Marfil • Ecuador </div>
+                          <div>F: Países Bajos • Japón • Suecia • Túnez</div>
+                          <div>G: Bélgica • Egipto • Irán • Nueva Zelanda </div>
+                          <div>H: España • Cabo Verde • Arabia Saudita • Uruguay</div>
+                          <div>I: Francia • Senegal • Iraq • Noruega</div>
+                          <div>J: Argentina • Argelia • Austria • Jordania</div>
+                          <div>K: Portugal • Congo DR • Uzbekistán  • Colombia</div>
+                          <div>L: Inglaterra • Croacia • Australia • Panamá</div>
                         </div>
                       </div>
 
