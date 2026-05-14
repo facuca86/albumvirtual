@@ -106,6 +106,7 @@ export default function PaniniAlbum2026() {
   const [currentView, setCurrentView] = useState('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [completed, setCompleted] = useState({});
+  const [showStats, setShowStats] = useState(false);
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -279,6 +280,9 @@ export default function PaniniAlbum2026() {
     );
   };
 
+  const completedCount = Object.values(completed).filter(Boolean).length;
+  const completionPercent = Math.round((completedCount / 982) * 100);
+
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
     ? ['FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => completed[code]).length
@@ -298,7 +302,7 @@ export default function PaniniAlbum2026() {
             </p>
 
             <div className="mt-2 text-sm font-black text-pink-800">
-              {Math.round((Object.values(completed).filter(Boolean).length / 982) * 100)}% COMPLETADO
+              {completionPercent}% COMPLETADO
             </div>
           </div>
 
@@ -313,13 +317,34 @@ export default function PaniniAlbum2026() {
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {currentView === 'home' && (
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <button
+              onClick={() => {
+                setCurrentTeamIndex(0);
+                setCurrentView('album');
+              }}
+              className="bg-white rounded-3xl p-8 shadow-xl text-left hover:scale-105 transition"
+            >
+              <div className="text-3xl font-black italic uppercase">
+                Explorar Álbum
+              </div>
+            </button>
+
             <button
               onClick={() => setCurrentView('teams')}
               className="bg-white rounded-3xl p-8 shadow-xl text-left hover:scale-105 transition"
             >
               <div className="text-3xl font-black italic uppercase">
-                Explorar Álbum
+                Indice
+              </div>
+            </button>
+
+            <button
+              onClick={() => setShowStats(true)}
+              className="bg-white rounded-3xl p-8 shadow-xl text-left hover:scale-105 transition"
+            >
+              <div className="text-3xl font-black italic uppercase">
+                Estadisticas
               </div>
             </button>
           </div>
@@ -563,6 +588,24 @@ export default function PaniniAlbum2026() {
           </div>
         )}
       </main>
+
+      {showStats && (
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md">
+            <h3 className="text-2xl font-black italic uppercase mb-6">Estadisticas</h3>
+            <div className="space-y-3 font-black">
+              <div>Figuritas completadas: {completedCount} / 980</div>
+              <div>Porcentaje completado: {completionPercent}%</div>
+            </div>
+            <button
+              onClick={() => setShowStats(false)}
+              className="mt-6 bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
