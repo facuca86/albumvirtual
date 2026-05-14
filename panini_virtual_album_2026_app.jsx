@@ -166,7 +166,37 @@ export default function PaniniAlbum2026() {
     flag: '🏳️'
   };
 
-  const stickerCount = currentTeam.startsWith('FWCI') ? 8 : currentTeam === 'COCA' ? 14 : 20;
+  const stickerCount = currentTeam.startsWith('FWCI') ? 8 : currentTeam.startsWith('FWCH') ? 6 : currentTeam === 'COCA' ? 14 : 20;
+
+
+  const historyPageItems = {
+    FWCH1: [
+      { type: 'printed', label: 'URUGUAY 1930' },
+      { type: 'sticker', code: 'FWC9', label: 'ITALIA 1934' },
+      { type: 'printed', label: 'ITALIA 1938' },
+      { type: 'sticker', code: 'FWC10', label: 'URUGUAY 1950' },
+      { type: 'sticker', code: 'FWC11', label: 'RF ALEMANIA 1954' },
+      { type: 'sticker', code: 'FWC12', label: 'BRASIL 1958' },
+      { type: 'sticker', code: 'FWC13', label: 'BRASIL 1962' },
+      { type: 'printed', label: 'INGLATERRA 1966' },
+      { type: 'printed', label: 'BRASIL 1970' },
+      { type: 'sticker', code: 'FWC14', label: 'RF ALEMANIA 1974' }
+    ],
+    FWCH2: [
+      { type: 'printed', label: 'ARGENTINA 1978' },
+      { type: 'printed', label: 'ITALIA 1982' },
+      { type: 'sticker', code: 'FWC15', label: 'ARGENTINA 1986' },
+      { type: 'printed', label: 'ALEMANIA 1990' },
+      { type: 'sticker', code: 'FWC16', label: 'BRASIL 1994' },
+      { type: 'printed', label: 'FRANCIA 1998' },
+      { type: 'sticker', code: 'FWC17', label: 'BRASIL 2002' },
+      { type: 'sticker', code: 'FWC18', label: 'ITALIA 2006' },
+      { type: 'printed', label: 'ESPAÑA 2010' },
+      { type: 'sticker', code: 'FWC19', label: 'ALEMANIA 2014' },
+      { type: 'printed', label: 'FRANCIA 2018' },
+      { type: 'sticker', code: 'FWC20', label: 'ARGENTINA 2022' }
+    ]
+  };
 
   const stickers = useMemo(() => {
     return Array.from({ length: stickerCount }, (_, i) => {
@@ -224,21 +254,29 @@ export default function PaniniAlbum2026() {
       } else if (currentTeam === 'COCA') {
         label = `Jugador ${id}`;
       } else if (currentTeam.startsWith('FWCH')) {
-        const historyLabels = {
-          1: 'Italia 1934',
-          2: 'Uruguay 1950',
-          3: 'Alemania 1954',
-          4: 'Brasil 1962',
-          5: 'Alemania 1974',
-          6: 'Argentina 1986',
-          7: 'Brasil 1994',
-          8: 'Brasil 2002',
-          9: 'Italia 2006',
-          10: 'Alemania 2014',
-          11: 'Argentina 2022'
+        const historySelectable = {
+          FWCH1: [
+            { code: 'FWC9', label: 'ITALIA 1934' },
+            { code: 'FWC10', label: 'URUGUAY 1950' },
+            { code: 'FWC11', label: 'RF ALEMANIA 1954' },
+            { code: 'FWC12', label: 'BRASIL 1958' },
+            { code: 'FWC13', label: 'BRASIL 1962' },
+            { code: 'FWC14', label: 'RF ALEMANIA 1974' }
+          ],
+          FWCH2: [
+            { code: 'FWC15', label: 'ARGENTINA 1986' },
+            { code: 'FWC16', label: 'BRASIL 1994' },
+            { code: 'FWC17', label: 'BRASIL 2002' },
+            { code: 'FWC18', label: 'ITALIA 2006' },
+            { code: 'FWC19', label: 'ALEMANIA 2014' },
+            { code: 'FWC20', label: 'ARGENTINA 2022' }
+          ]
         };
 
-        label = historyLabels[id] || `Campeón ${id}`;
+        const historySticker = historySelectable[currentTeam][id - 1];
+        code = historySticker?.code || code;
+        label = historySticker?.label || `CAMPEÓN ${id}`;
+        horizontal = true;
       } else {
         type = id === 1 ? 'shield' : id === 13 ? 'team' : 'player';
         label = type === 'shield' ? 'Escudo' : type === 'team' ? 'Foto Equipo' : `Jugador ${id}`;
@@ -402,7 +440,39 @@ export default function PaniniAlbum2026() {
             </div>
 
             <div className="grid lg:grid-cols-2 overflow-hidden rounded-[2rem] border-4 border-slate-200 bg-white">
-              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-green-200 via-yellow-100 to-blue-200' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : 'bg-[#f7f5f2]'}`}>
+              {currentTeam.startsWith('FWCH') ? (
+                <div className="lg:col-span-2 p-3 sm:p-8 bg-[#0d1b4d]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+                    {historyPageItems[currentTeam].map((item, index) => {
+                      if (item.type === 'printed') {
+                        return (
+                          <div
+                            key={`${currentTeam}-printed-${index}`}
+                            className="border-2 border-slate-500 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] bg-slate-600 text-slate-200"
+                          >
+                            <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
+                              {item.label}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      const sticker = stickers.find((s) => s.code === item.code);
+                      return (
+                        <Sticker
+                          key={item.code}
+                          sticker={sticker}
+                          horizontal
+                          currentTeam={currentTeam}
+                          onToggle={toggleSticker}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+              <>
+              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-green-200 via-yellow-100 to-blue-200' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d]' : 'bg-[#f7f5f2]'}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   <div className="col-span-2">
                     <div className={`text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
@@ -482,7 +552,7 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
 
-              <div className={`p-3 sm:p-8 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-yellow-100 via-blue-100 to-green-100' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : 'bg-[#faf8f5]'}`}>
+              <div className={`p-3 sm:p-8 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-yellow-100 via-blue-100 to-green-100' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d]' : 'bg-[#faf8f5]'}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   {currentTeam === 'FWCI1' ? (
                     <>
@@ -584,6 +654,8 @@ export default function PaniniAlbum2026() {
                   ))}
                 </div>
               </div>
+              </>
+              )}
             </div>
           </div>
         )}
