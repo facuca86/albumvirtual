@@ -699,7 +699,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
           {sticker.code}
         </div>
 
-        <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed ? 'font-extrabold' : 'font-black'} ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
+        <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed ? 'font-extrabold' : 'font-black'} ${currentTeam === 'COCA' || currentTeam.startsWith('FWCH') ? 'text-black' : ''}`}>
           {sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`}
         </div>
       </div>
