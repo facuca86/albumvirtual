@@ -166,7 +166,7 @@ export default function PaniniAlbum2026() {
     flag: '🏳️'
   };
 
-  const stickerCount = currentTeam.startsWith('FWCI') ? 8 : currentTeam.startsWith('FWCH') ? 6 : currentTeam === 'COCA' ? 14 : 20;
+  const stickerCount = currentTeam.startsWith('FWCI') ? 8 : currentTeam.startsWith('FWCH') ? 12 : currentTeam === 'COCA' ? 14 : 20;
 
 
   const historyPageItems = {
@@ -324,6 +324,9 @@ export default function PaniniAlbum2026() {
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
     ? ['FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => completed[code]).length
+    : currentTeam.startsWith('FWCH')
+    ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19','FWC20']
+        .filter((code) => completed[code]).length
     : stickers.filter((s) => s.completed).length;
 
   return (
@@ -441,35 +444,77 @@ export default function PaniniAlbum2026() {
 
             <div className="grid lg:grid-cols-2 overflow-hidden rounded-[2rem] border-4 border-slate-200 bg-white">
               {currentTeam.startsWith('FWCH') ? (
-                <div className="lg:col-span-2 p-3 sm:p-8 bg-[#0d1b4d]">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-                    {historyPageItems[currentTeam].map((item, index) => {
-                      if (item.type === 'printed') {
-                        return (
-                          <div
-                            key={`${currentTeam}-printed-${index}`}
-                            className="border-2 border-slate-500 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] bg-slate-600 text-slate-200"
-                          >
-                            <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
-                              {item.label}
-                            </div>
+                <>
+                  <div className="p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 bg-[#f7f5f2]">
+                    <div className="grid grid-cols-4 gap-2 sm:gap-4">
+                      <div className="col-span-4">
+                        <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-[#0d1b4d]">
+                          FIFA WORLD CUP HISTORY
+                        </div>
+                        <div className="flex items-center gap-3 sm:gap-4 mb-4">
+                          <div className="text-5xl sm:text-6xl">⭐</div>
+                          <div className="font-black uppercase text-[10px] sm:text-sm leading-tight text-[#0d1b4d]">
+                            WORLD CHAMPIONS
                           </div>
-                        );
-                      }
+                        </div>
+                      </div>
 
-                      const sticker = stickers.find((s) => s.code === item.code);
-                      return (
-                        <Sticker
-                          key={item.code}
-                          sticker={sticker}
-                          horizontal
-                          currentTeam={currentTeam}
-                          onToggle={toggleSticker}
-                        />
-                      );
-                    })}
+                      {historyPageItems[currentTeam].slice(0, Math.ceil(historyPageItems[currentTeam].length / 2)).map((item, index) => {
+                        if (item.type === 'printed') {
+                          return (
+                            <div
+                              key={`${currentTeam}-printed-left-${index}`}
+                              className="border-2 border-slate-300 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] bg-slate-200 text-slate-600"
+                            >
+                              <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
+                                {item.label}
+                              </div>
+                            </div>
+                          );
+                        }
+                        const sticker = stickers.find((s) => s.code === item.code);
+                        return (
+                          <Sticker
+                            key={item.code}
+                            sticker={sticker}
+                            horizontal
+                            currentTeam={currentTeam}
+                            onToggle={toggleSticker}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+
+                  <div className="p-3 sm:p-8 bg-[#faf8f5]">
+                    <div className="grid grid-cols-4 gap-2 sm:gap-4">
+                      {historyPageItems[currentTeam].slice(Math.ceil(historyPageItems[currentTeam].length / 2)).map((item, index) => {
+                        if (item.type === 'printed') {
+                          return (
+                            <div
+                              key={`${currentTeam}-printed-right-${index}`}
+                              className="border-2 border-slate-300 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] bg-slate-200 text-slate-600"
+                            >
+                              <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
+                                {item.label}
+                              </div>
+                            </div>
+                          );
+                        }
+                        const sticker = stickers.find((s) => s.code === item.code);
+                        return (
+                          <Sticker
+                            key={item.code}
+                            sticker={sticker}
+                            horizontal
+                            currentTeam={currentTeam}
+                            onToggle={toggleSticker}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
               ) : (
               <>
               <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-green-200 via-yellow-100 to-blue-200' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d]' : 'bg-[#f7f5f2]'}`}>
