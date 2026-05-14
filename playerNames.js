@@ -17,7 +17,7 @@ export const playerNames = {
     17: "Lionel Messi",
     18: "Lautaro Martínez",
     19: "Julián Álvarez",
-    20: "Gonzalo Montiel"
+    20: "Giuliano Simeone"
   },
 
 MEX: {
