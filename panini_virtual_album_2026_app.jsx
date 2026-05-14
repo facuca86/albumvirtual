@@ -329,6 +329,56 @@ export default function PaniniAlbum2026() {
   const brilliantCodes = [...shieldCodes, ...fwcBrilliantCodes];
   const brilliantCompletedCount = brilliantCodes.filter((code) => completed[code]).length;
 
+  const selectionTeams = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA');
+
+  const selectionStats = useMemo(() => {
+    const paniniCodes = ['PANINI'];
+    const fwcIntroCodes = Array.from({ length: 8 }, (_, i) => `FWC${i + 1}`);
+    const fwcHistoryCodes = Array.from({ length: 12 }, (_, i) => `FWC${i + 9}`);
+    const cocaCodes = Array.from({ length: 14 }, (_, i) => `CC${i + 1}`);
+
+    return [
+      {
+        key: 'PANINI',
+        emoji: '⚽',
+        name: 'PANINI',
+        total: paniniCodes.length,
+        completed: paniniCodes.filter((code) => completed[code]).length
+      },
+      {
+        key: 'FWC_INTRO',
+        emoji: '⚽',
+        name: 'FWC INTRO',
+        total: fwcIntroCodes.length,
+        completed: fwcIntroCodes.filter((code) => completed[code]).length
+      },
+      ...selectionTeams.map((team) => {
+        const teamCodes = Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
+        return {
+          key: team,
+          emoji: teamData[team]?.flag || '🏳️',
+          name: (teamData[team]?.name || team).toUpperCase(),
+          total: teamCodes.length,
+          completed: teamCodes.filter((code) => completed[code]).length
+        };
+      }),
+      {
+        key: 'FWC_HISTORY',
+        emoji: '🏆',
+        name: 'FWC HISTORY',
+        total: fwcHistoryCodes.length,
+        completed: fwcHistoryCodes.filter((code) => completed[code]).length
+      },
+      {
+        key: 'COCA_COLA',
+        emoji: '⚽',
+        name: 'COCA-COLA',
+        total: cocaCodes.length,
+        completed: cocaCodes.filter((code) => completed[code]).length
+      }
+    ];
+  }, [completed, selectionTeams]);
+
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
     ? ['FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => completed[code]).length
@@ -395,6 +445,28 @@ export default function PaniniAlbum2026() {
               <div className="text-3xl font-black italic uppercase">
                 Estadisticas
               </div>
+            </button>
+          </div>
+        )}
+
+        {currentView === 'stats-selections' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto">
+            <h2 className="text-3xl font-black italic uppercase mb-6">Estadisticas Selecciones</h2>
+            <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
+              {selectionStats.map((item) => (
+                <div key={item.key} className="font-black text-lg sm:text-xl">
+                  {item.emoji} {item.name}: {item.completed} / {item.total}
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setCurrentView('home');
+                setShowStats(true);
+              }}
+              className="mt-6 bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+            >
+              VOLVER
             </button>
           </div>
         )}
@@ -732,12 +804,23 @@ export default function PaniniAlbum2026() {
               <div>Me faltan: {remainingCount}</div>
               <div>Brillantes: {brilliantCompletedCount} / 68</div>
             </div>
-            <button
-              onClick={() => setShowStats(false)}
-              className="mt-6 bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
-            >
-              Cerrar
-            </button>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                onClick={() => {
+                  setShowStats(false);
+                  setCurrentView('stats-selections');
+                }}
+                className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                Estadisticas Selecciones
+              </button>
+              <button
+                onClick={() => setShowStats(false)}
+                className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
