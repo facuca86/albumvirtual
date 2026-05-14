@@ -233,7 +233,7 @@ export default function PaniniAlbum2026() {
         }
       } else if (currentTeam.startsWith('FWCI')) {
         if (id === 1) {
-          label = '';
+          label = '00';
           horizontal = true;
         }
         if (id === 2) {
@@ -433,7 +433,7 @@ export default function PaniniAlbum2026() {
                   </h2>
                   <button
                     onClick={() => setCurrentView('teams')}
-                    className="bg-red-600 text-white px-4 py-2 rounded-2xl font-black uppercase text-lg sm:text-2xl leading-none"
+                    className={`${currentTeam === 'COCA' ? 'bg-white text-red-600' : 'bg-red-600 text-white'} px-4 py-2 rounded-2xl font-black uppercase text-lg sm:text-2xl leading-none`}
                   >
                     INDICE
                   </button>
