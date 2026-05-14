@@ -419,9 +419,17 @@ export default function PaniniAlbum2026() {
               </button>
 
               <div className="text-center">
-                <h2 className="text-3xl sm:text-5xl font-black italic uppercase break-words">
-                  {currentTeamInfo.name}
-                </h2>
+                <div className="flex items-center justify-center gap-3 flex-wrap">
+                  <h2 className="text-3xl sm:text-5xl font-black italic uppercase break-words">
+                    {currentTeamInfo.name}
+                  </h2>
+                  <button
+                    onClick={() => setCurrentView('teams')}
+                    className="bg-red-600 text-white px-4 py-2 rounded-2xl font-black uppercase text-lg sm:text-2xl leading-none"
+                  >
+                    INDICE
+                  </button>
+                </div>
 
                 <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : 'text-slate-500'}`}>
                   {currentTeamInfo.federation}
