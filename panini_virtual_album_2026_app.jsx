@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { playerNames } from './playerNames';
 
 const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
 
@@ -252,7 +253,7 @@ export default function PaniniAlbum2026() {
           label = 'Poster';
         }
       } else if (currentTeam === 'COCA') {
-        label = `Jugador ${id}`;
+        label = playerNames.CC?.[id] || `Jugador ${id}`;
       } else if (currentTeam.startsWith('FWCH')) {
         const historySelectable = {
           FWCH1: [
@@ -279,7 +280,7 @@ export default function PaniniAlbum2026() {
         horizontal = true;
       } else {
         type = id === 1 ? 'shield' : id === 13 ? 'team' : 'player';
-        label = type === 'shield' ? 'Escudo' : type === 'team' ? 'Foto Equipo' : `Jugador ${id}`;
+        label = type === 'shield' ? 'Escudo' : type === 'team' ? 'Foto equipo' : playerNames[currentTeam]?.[id] || `Jugador ${id}`;
         horizontal = id === 13;
       }
 
