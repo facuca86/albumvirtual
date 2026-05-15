@@ -178,6 +178,9 @@ export default function PaniniAlbum2026() {
 
   const stickerCount = currentTeam.startsWith('FWCI') ? 8 : currentTeam.startsWith('FWCH') ? 12 : currentTeam === 'COCA' ? 14 : 20;
 
+  const isRepeatedSticker = (value) => value === 'repeated';
+  const isCompletedSticker = (value) => value === true || value === 'repeated';
+
 
   const historyPageItems = {
     FWCH1: [
@@ -296,7 +299,8 @@ export default function PaniniAlbum2026() {
       return {
         id,
         code,
-        completed: completed[code] || false,
+        completed: isCompletedSticker(completed[code]),
+        repeated: isRepeatedSticker(completed[code]),
         type,
         label,
         horizontal
@@ -305,10 +309,21 @@ export default function PaniniAlbum2026() {
   }, [currentTeam, completed, stickerCount]);
 
   const toggleSticker = (code) => {
-    setCompleted((prev) => ({
-      ...prev,
-      [code]: !prev[code]
-    }));
+    setCompleted((prev) => {
+      const current = prev[code];
+
+      if (current === true) {
+        return { ...prev, [code]: 'repeated' };
+      }
+
+      if (current === 'repeated') {
+        const next = { ...prev };
+        delete next[code];
+        return next;
+      }
+
+      return { ...prev, [code]: true };
+    });
   };
 
   const nextTeam = () => {
@@ -328,7 +343,8 @@ export default function PaniniAlbum2026() {
     );
   };
 
-  const completedCount = Object.values(completed).filter(Boolean).length;
+  const completedCount = Object.values(completed).filter((value) => isCompletedSticker(value)).length;
+  const repeatedCount = Object.values(completed).filter((value) => isRepeatedSticker(value)).length;
   const completionPercent = Math.round((completedCount / 982) * 100);
   const remainingCount = Math.max(980 - completedCount, 0);
 
@@ -337,7 +353,7 @@ export default function PaniniAlbum2026() {
     .map((team) => `${team}1`);
   const fwcBrilliantCodes = Array.from({ length: 20 }, (_, i) => `FWC${i + 1}`);
   const brilliantCodes = [...shieldCodes, ...fwcBrilliantCodes];
-  const brilliantCompletedCount = brilliantCodes.filter((code) => completed[code]).length;
+  const brilliantCompletedCount = brilliantCodes.filter((code) => isCompletedSticker(completed[code])).length;
 
   const selectionTeams = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA');
 
@@ -353,14 +369,14 @@ export default function PaniniAlbum2026() {
         emoji: '⚽',
         name: 'PANINI',
         total: paniniCodes.length,
-        completed: paniniCodes.filter((code) => completed[code]).length
+        completed: paniniCodes.filter((code) => isCompletedSticker(completed[code])).length
       },
       {
         key: 'FWC_INTRO',
         emoji: '⚽',
         name: 'FWC INTRO',
         total: fwcIntroCodes.length,
-        completed: fwcIntroCodes.filter((code) => completed[code]).length
+        completed: fwcIntroCodes.filter((code) => isCompletedSticker(completed[code])).length
       },
       ...selectionTeams.map((team) => {
         const teamCodes = Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
@@ -369,7 +385,7 @@ export default function PaniniAlbum2026() {
           emoji: teamData[team]?.flag || '🏳️',
           name: (teamData[team]?.name || team).toUpperCase(),
           total: teamCodes.length,
-          completed: teamCodes.filter((code) => completed[code]).length
+          completed: teamCodes.filter((code) => isCompletedSticker(completed[code])).length
         };
       }),
       {
@@ -377,24 +393,24 @@ export default function PaniniAlbum2026() {
         emoji: '🏆',
         name: 'CAMPEONES',
         total: fwcHistoryCodes.length,
-        completed: fwcHistoryCodes.filter((code) => completed[code]).length
+        completed: fwcHistoryCodes.filter((code) => isCompletedSticker(completed[code])).length
       },
       {
         key: 'COCA_COLA',
         emoji: '⚽',
         name: 'COCA-COLA',
         total: cocaCodes.length,
-        completed: cocaCodes.filter((code) => completed[code]).length
+        completed: cocaCodes.filter((code) => isCompletedSticker(completed[code])).length
       }
     ];
   }, [completed, selectionTeams]);
 
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
     ? ['FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
-        .filter((code) => completed[code]).length
+        .filter((code) => isCompletedSticker(completed[code])).length
     : currentTeam.startsWith('FWCH')
     ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19','FWC20']
-        .filter((code) => completed[code]).length
+        .filter((code) => isCompletedSticker(completed[code])).length
     : stickers.filter((s) => s.completed).length;
 
   return (
@@ -500,7 +516,7 @@ export default function PaniniAlbum2026() {
         )}
 
         {currentView === 'album' && (
-          <div className={`rounded-3xl p-4 sm:p-8 shadow-xl ${currentTeam === 'COCA' ? 'bg-red-600 text-white' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d] text-white' : currentTeam.startsWith('FWCI') ? 'bg-gradient-to-r from-green-100 via-blue-100 to-red-100' : 'bg-white'}`}>
+          <div className={`rounded-3xl p-4 sm:p-8 shadow-xl ${currentTeam === 'COCA' ? 'bg-red-600 text-white' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d] text-white' : currentTeam.startsWith('FWCI') ? 'bg-gradient-to-r from-green-100 via-blue-100 to-red-100' : currentTeam === 'MEX' ? 'bg-gradient-to-r from-green-100 via-white to-red-100' : currentTeam === 'USA' ? 'bg-gradient-to-r from-blue-100 via-white to-red-100' : currentTeam === 'CAN' ? 'bg-gradient-to-r from-red-100 via-white to-red-100' : currentTeam === 'ARG' ? 'bg-gradient-to-r from-sky-100 via-white to-yellow-100' : currentTeam === 'BRA' ? 'bg-gradient-to-r from-green-100 via-yellow-100 to-green-200' : currentTeam === 'GER' ? 'bg-gradient-to-r from-slate-900 via-red-300 to-yellow-200 text-white' : currentTeam === 'FRA' ? 'bg-gradient-to-r from-blue-200 via-white to-blue-50' : currentTeam === 'ESP' ? 'bg-gradient-to-r from-red-200 via-yellow-100 to-red-200' : currentTeam === 'URU' ? 'bg-gradient-to-r from-sky-100 via-white to-sky-200' : currentTeam === 'ENG' ? 'bg-gradient-to-r from-white via-red-50 to-white' : 'bg-white'}`}>
             <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
               <button
                 onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
@@ -803,6 +819,17 @@ export default function PaniniAlbum2026() {
             </div>
           </div>
         )}
+
+
+      {currentView === 'album' && (
+        <button
+          onClick={() => setCurrentView('teams')}
+          className="fixed bottom-5 right-4 sm:right-6 md:hidden bg-red-600 text-white px-4 py-2 rounded-full font-black uppercase text-sm shadow-lg z-[55]"
+        >
+          INDICE
+        </button>
+      )}
+
       </main>
 
       {showStats && (
@@ -814,6 +841,7 @@ export default function PaniniAlbum2026() {
               <div>Porcentaje completado: {completionPercent}%</div>
               <div>Me faltan: {remainingCount}</div>
               <div>Brillantes: {brilliantCompletedCount} / 68</div>
+              <div>Repetidas: {repeatedCount}</div>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <button
@@ -849,14 +877,14 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
   return (
     <button
       onClick={() => onToggle(sticker.code)}
-      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
     >
       <div>
-        <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
+        <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? 'text-slate-100 font-extrabold' : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
           {sticker.code}
         </div>
 
-        <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed ? 'font-extrabold' : 'font-black'} ${currentTeam === 'COCA' || currentTeam.startsWith('FWCH') ? 'text-black' : ''}`}>
+        <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed || sticker.repeated ? 'font-extrabold' : 'font-black'} ${sticker.repeated ? 'text-slate-100' : currentTeam === 'COCA' || currentTeam.startsWith('FWCH') ? 'text-black' : ''}`}>
           {sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`}
         </div>
       </div>
