@@ -101,6 +101,15 @@ const completeTeamData = {
 
 Object.assign(teamData, completeTeamData);
 
+const indexTeamIcons = {
+  FWCI1: '⚽',
+  FWCI2: '⚽',
+  FWCH1: '🏆',
+  FWCH2: '🏆',
+  COCA: '⚽'
+};
+
+
 const progressDocRef = db ? doc(db, 'albumProgress', 'paniniWorldCup2026') : null;
 
 export default function PaniniAlbum2026() {
@@ -481,9 +490,10 @@ export default function PaniniAlbum2026() {
                   setCurrentTeamIndex(teams.indexOf(team));
                   setCurrentView('album');
                 }}
-                className="bg-white rounded-2xl p-4 shadow font-black italic hover:scale-105 transition"
+                className="bg-white rounded-2xl p-4 shadow font-black italic hover:scale-105 transition flex items-center gap-2"
               >
-                {teamData[team]?.name || team}
+                <span>{indexTeamIcons[team] || teamData[team]?.flag || '🏳️'}</span>
+                <span>{teamData[team]?.name || team}</span>
               </button>
             ))}
           </div>
