@@ -817,7 +817,8 @@ MEX: {
 17: "Oston Urunov",
 18: "Jaloliddin Masharipov",
 19: "Igor Sergeev",
-20: "Abbosbek Fayzullaev",
+20: "Abbosbek Fayzullaev"
+},
   COL: {
 2: "Camilo Vargas",
 3: "David Ospina",
@@ -935,4 +936,4 @@ MEX: {
     13: "Raul Jimenez",
     14: "Lautaro Martinez"
   }
-};
+}
