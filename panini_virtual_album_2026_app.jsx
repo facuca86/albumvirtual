@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { playerNames } from './playerNames';
+import { teamThemes } from './teamThemes';
 
 const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
 
@@ -111,6 +112,18 @@ const indexTeamIcons = {
 
 
 const progressDocRef = db ? doc(db, 'albumProgress', 'paniniWorldCup2026') : null;
+
+const getThemeKey = (teamCode) => {
+  if (teamCode && teamCode.startsWith('FWCI')) return 'FWCINTRO';
+  if (teamCode && teamCode.startsWith('FWCH')) return 'FWCHISTORY';
+  return teamCode;
+};
+
+const getTeamGradientClass = (teamCode) => {
+  const themeKey = getThemeKey(teamCode);
+  const gradient = teamThemes[themeKey]?.gradient;
+  return gradient ? `bg-gradient-to-r ${gradient}` : 'bg-white';
+};
 
 export default function PaniniAlbum2026() {
   const [currentView, setCurrentView] = useState('home');
@@ -416,24 +429,31 @@ export default function PaniniAlbum2026() {
   return (
     <div className="min-h-screen bg-[#880E4F] text-slate-800">
       <header className="bg-white border-b shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-4 flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-center">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black italic text-center sm:text-left">
+            <h1 className="text-xl sm:text-3xl font-black italic text-center sm:text-left">
               ÁLBUM VIRTUAL 2026
             </h1>
 
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500 text-center sm:text-left">
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 text-center sm:text-left">
               FIFA WORLD CUP
             </p>
 
-            <div className="mt-2 text-sm font-black text-pink-800">
+            <div className="mt-1 sm:mt-2 text-sm font-black text-pink-800">
               {completionPercent}% COMPLETADO
+            </div>
+
+            <div className="mt-1.5 sm:mt-2 h-2 sm:h-2.5 w-40 sm:w-56 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-lime-500 to-green-600 transition-all"
+                style={{ width: `${completionPercent}%` }}
+              />
             </div>
           </div>
 
           <button
             onClick={() => setCurrentView('home')}
-            className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+            className="bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-black text-sm sm:text-base"
           >
             HOME
           </button>
@@ -516,7 +536,7 @@ export default function PaniniAlbum2026() {
         )}
 
         {currentView === 'album' && (
-          <div className={`rounded-3xl p-4 sm:p-8 shadow-xl ${currentTeam === 'COCA' ? 'bg-red-600 text-white' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d] text-white' : currentTeam.startsWith('FWCI') ? 'bg-gradient-to-r from-green-100 via-blue-100 to-red-100' : currentTeam === 'MEX' ? 'bg-gradient-to-r from-green-100 via-white to-red-100' : currentTeam === 'USA' ? 'bg-gradient-to-r from-blue-100 via-white to-red-100' : currentTeam === 'CAN' ? 'bg-gradient-to-r from-red-100 via-white to-red-100' : currentTeam === 'ARG' ? 'bg-gradient-to-r from-sky-100 via-white to-yellow-100' : currentTeam === 'BRA' ? 'bg-gradient-to-r from-green-100 via-yellow-100 to-green-200' : currentTeam === 'GER' ? 'bg-gradient-to-r from-slate-900 via-red-300 to-yellow-200 text-white' : currentTeam === 'FRA' ? 'bg-gradient-to-r from-blue-200 via-white to-blue-50' : currentTeam === 'ESP' ? 'bg-gradient-to-r from-red-200 via-yellow-100 to-red-200' : currentTeam === 'URU' ? 'bg-gradient-to-r from-sky-100 via-white to-sky-200' : currentTeam === 'ENG' ? 'bg-gradient-to-r from-white via-red-50 to-white' : 'bg-white'}`}>
+          <div className={`rounded-3xl p-4 sm:p-8 shadow-xl ${getTeamGradientClass(currentTeam)}`}>
             <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
               <button
                 onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
@@ -632,7 +652,7 @@ export default function PaniniAlbum2026() {
                 </>
               ) : (
               <>
-              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-green-200 via-yellow-100 to-blue-200' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d]' : 'bg-[#f7f5f2]'}`}>
+              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${getTeamGradientClass(currentTeam)}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   <div className="col-span-2">
                     <div className={`text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
@@ -712,7 +732,7 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
 
-              <div className={`p-3 sm:p-8 ${currentTeam === 'FWCI1' ? 'bg-gradient-to-br from-yellow-100 via-blue-100 to-green-100' : currentTeam === 'FWCI2' ? 'bg-[#555555]' : currentTeam.startsWith('FWCH') ? 'bg-[#0d1b4d]' : 'bg-[#faf8f5]'}`}>
+              <div className={`p-3 sm:p-8 ${getTeamGradientClass(currentTeam)}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   {currentTeam === 'FWCI1' ? (
                     <>
@@ -816,6 +836,22 @@ export default function PaniniAlbum2026() {
               </div>
               </>
               )}
+            </div>
+
+            <div className="md:hidden mt-4 flex items-center justify-between gap-2">
+              <button
+                onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
+                className="bg-white/80 text-black rounded-full px-4 py-2 shadow font-bold italic text-xs"
+              >
+                {currentTeam === 'FWCI1' ? 'HOME' : '← ANTERIOR'}
+              </button>
+
+              <button
+                onClick={nextTeam}
+                className="bg-white/80 text-black rounded-full px-4 py-2 shadow font-bold italic text-xs"
+              >
+                {currentTeam === 'COCA' ? 'HOME' : 'SIGUIENTE →'}
+              </button>
             </div>
           </div>
         )}
