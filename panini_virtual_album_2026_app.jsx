@@ -128,6 +128,11 @@ const getTeamGradientClass = (teamCode) => {
   return gradient ? `bg-gradient-to-r ${gradient}` : 'bg-white';
 };
 
+const getInnerPanelClass = (teamCode) => {
+  if (teamCode && teamCode.startsWith('FWCI')) return getTeamGradientClass(teamCode);
+  return 'bg-[#f7f5f2]';
+};
+
 export default function PaniniAlbum2026() {
   const [currentView, setCurrentView] = useState('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
@@ -655,7 +660,7 @@ export default function PaniniAlbum2026() {
                 </>
               ) : (
               <>
-              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${getTeamGradientClass(currentTeam)}`}>
+              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${getInnerPanelClass(currentTeam)}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   <div className="col-span-2">
                     <div className={`text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
@@ -735,7 +740,7 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
 
-              <div className={`p-3 sm:p-8 ${getTeamGradientClass(currentTeam)}`}>
+              <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam)}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   {currentTeam === 'FWCI1' ? (
                     <>
