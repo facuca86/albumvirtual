@@ -36,13 +36,16 @@
 
       const playerNamesSrc = await fetch('./playerNames.js').then((r) => r.text());
       const playerNamesUrl = makeModuleUrl(playerNamesSrc);
+      const teamThemesSrc = await fetch('./teamThemes.js').then((r) => r.text());
+      const teamThemesUrl = makeModuleUrl(teamThemesSrc);
 
       const appSrc = await fetch('./panini_virtual_album_2026_app.jsx').then((r) => r.text());
       const appPatched = appSrc
         .replace(/from\s+['"]react['"]/g, `from '${reactUrl}'`)
         .replace(/from\s+['"]firebase\/firestore['"]/g, `from '${firebaseFirestoreUrl}'`)
         .replace(/from\s+['"]\.\/firebase['"]/g, `from '${firebaseUrl}'`)
-        .replace(/from\s+['"]\.\/playerNames(?:\.js)?['"]/g, `from '${playerNamesUrl}'`);
+        .replace(/from\s+['"]\.\/playerNames(?:\.js)?['"]/g, `from '${playerNamesUrl}'`)
+        .replace(/from\s+['"]\.\/teamThemes(?:\.js)?['"]/g, `from '${teamThemesUrl}'`);
       const appUrl = makeModuleUrl(transpile(appPatched, 'panini_virtual_album_2026_app.jsx'));
 
       const [{ default: PaniniAlbum2026 }, { createRoot }, React] = await Promise.all([
