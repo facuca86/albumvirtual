@@ -120,6 +120,9 @@ const getThemeKey = (teamCode) => {
 };
 
 const getTeamGradientClass = (teamCode) => {
+  if (teamCode === 'COCA') return 'bg-[#e41f1f]';
+  if (teamCode && teamCode.startsWith('FWCH')) return 'bg-[#0d2167]';
+
   const themeKey = getThemeKey(teamCode);
   const gradient = teamThemes[themeKey]?.gradient;
   return gradient ? `bg-gradient-to-r ${gradient}` : 'bg-white';

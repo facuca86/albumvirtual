@@ -52,7 +52,5 @@ export const teamThemes = {
   PAN: { gradient: "from-white via-red-100 to-blue-100" },
 
   // especiales
-  FWCINTRO: { gradient: "from-yellow-50 via-sky-100 to-emerald-100" },
-  FWCHISTORY: { gradient: "from-[#0d2167] via-[#0d2167] to-[#0d2167]"  },
-  COCA: {  gradient: "from-[#e41f1f] via-[#e41f1f] to-[#e41f1f]" }
+  FWCINTRO: { gradient: "from-yellow-50 via-sky-100 to-emerald-100" }
 };
