@@ -53,6 +53,6 @@ export const teamThemes = {
 
   // especiales
   FWCINTRO: { gradient: "from-yellow-50 via-sky-100 to-emerald-100" },
-  FWCHISTORY: { gradient: "from-yellow-50 via-amber-100 to-orange-100" },
-  COCA: { gradient: "from-red-100 via-white to-red-200" }
+  FWCHISTORY: { gradient: "from-[#0d2167] via-[#0d2167] to-[#0d2167]"  },
+  COCA: {  gradient: "from-[#e41f1f] via-[#e41f1f] to-[#e41f1f]" }
 };
