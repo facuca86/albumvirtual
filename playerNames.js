@@ -201,23 +201,24 @@ MEX: {
   20: "Estêvão"
 },
   MAR: {
-  2: "Yassine Bounou",
-  3: "Munir El Kajoui",
-  4: "Achraf Hakimi",
-  5: "Noussair Mazraoui",
-  6: "Nayef Aguerd",
-  7: "Romain Saïss",
-  8: "Jawad El Yamiq",
-  9: "Adam Masina",
-  10: "Sofyan Amrabat",
-  11: "Azzedine Ounahi",
-  12: "Bilal El Khannouss",
-  14: "Ismael Saibari",
-  15: "Youssef En-Nesyri",
-  16: "Abde Ezzalzouli",
-  17: "Soufiane Rahimi",
-  18: "Brahim Díaz",
-  19: "Ayoub El Kaabi"
+2: "Yassine Bounou",
+3: "Munir El Kajoui",
+4: "Achraf Hakimi",
+5: "Noussair Mazraoui",
+6: "Nayef Aguerd",
+7: "Romain Saïss",
+8: "Jawad El Yamiq",
+9: "Adam Masina",
+10: "Sofyan Amrabat",
+11: "Azzedine Ounahi",
+12: "Eliesse Ben Seghir",
+14: "Bilal El Khannouss",
+15: "Ismael Saibari",
+16: "Youssef En-Nesyri",
+17: "Abde Ezzalzouli",
+18: "Soufiane Rahimi",
+19: "Brahim Díaz",
+20: "Ayoub El Kaabi"
 },
   HAI: {
 2: "Johny Placide",
@@ -679,7 +680,7 @@ MEX: {
   19: "Hugo Ekitiké",
   20: "Kylian Mbappé"
 },
-  SSEN: {
+  SEN: {
 2: "Édouard Mendy",
 3: "Yehvann Diouf",
 4: "Moussa Niakhaté",
