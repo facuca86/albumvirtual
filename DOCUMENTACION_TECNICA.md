@@ -70,11 +70,10 @@ Se solicitó explícitamente:
 - No se modificó lógica de negocio, UI ni configuración de runtime.
 
 ### 3.3 Estado de las mejoras registradas en `TASKS_REFACTOR.md`
-A nivel documental, se identifican como **pendientes** (no implementadas en código en esta iteración):
-1. Cálculo dinámico del porcentaje global (reemplazar denominador fijo).
-2. Correcciones tipográficas de “Poster” → “Póster”.
-3. Clarificación/unificación de fuente de verdad entre `teamData` y `completeTeamData`.
-4. Extracción de lógica de generación de stickers y cobertura de pruebas automatizadas.
+1. ✅ **Total de stickers oficiales** — Implementado: se definió `TOTAL_STICKERS = 981` y se usa en porcentaje, `remainingCount` y UI. Los stickers de Coca-Cola (CC1–CC14) son seleccionables pero **no forman parte de la colección oficial** según Panini; por eso se excluyen del conteo de progreso aunque estén físicamente en el álbum.
+2. Correcciones tipográficas de “Poster” → “Póster” — pendiente.
+3. Clarificación/unificación de fuente de verdad entre `teamData` y `completeTeamData` — pendiente.
+4. Extracción de lógica de generación de stickers y cobertura de pruebas automatizadas — pendiente.
 
 ---
 
