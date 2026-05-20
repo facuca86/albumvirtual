@@ -607,13 +607,19 @@ export default function PaniniAlbum2026() {
             {currentTeam === 'FWCI1' && (
               <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
                 <div className="grid grid-cols-4 gap-2">
-                  <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} />
                   <div className="col-span-2">
-                    <Sticker sticker={stickers[4]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                    <Sticker sticker={stickers[0]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
                   </div>
+                  <div className="col-span-2">
+                    <Sticker sticker={stickers[1]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                  </div>
+                  <div className="col-span-2">
+                    <Sticker sticker={stickers[3]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                  </div>
+                  <div className="col-span-2">
+                    <Sticker sticker={stickers[2]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                  </div>
+                  <Sticker sticker={stickers[4]} currentTeam={currentTeam} onToggle={toggleSticker} />
                 </div>
                 <div className="border-4 border-yellow-500 rounded-xl p-4 bg-gradient-to-br from-yellow-300 via-yellow-200 to-amber-100 text-black mt-3">
                   <div className="text-center font-black uppercase text-xs mb-2">Cuadro de Honor</div>
