@@ -468,7 +468,7 @@ export default function PaniniAlbum2026() {
 
           <button
             onClick={() => setCurrentView('home')}
-            className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-xs sm:text-base shrink-0"
+            className="bg-red-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base shrink-0"
           >
             HOME
           </button>
@@ -683,7 +683,22 @@ export default function PaniniAlbum2026() {
                 </>
               ) : (
               <>
-              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${getInnerPanelClass(currentTeam)}`}>
+              {!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' && (
+                <div className={`lg:hidden p-3 ${getInnerPanelClass(currentTeam)}`}>
+                  <div className="grid grid-cols-4 gap-2">
+                    {stickers.map((sticker) =>
+                      sticker.id === 13 ? (
+                        <div key={sticker.code} className="col-span-2">
+                          <Sticker sticker={sticker} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                        </div>
+                      ) : (
+                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} />
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${getInnerPanelClass(currentTeam)} ${!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   <div className="col-span-2 hidden lg:block">
                     <div className={`text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
@@ -763,7 +778,7 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
 
-              <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam)}`}>
+              <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam)} ${!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   {currentTeam === 'FWCI1' ? (
                     <>
