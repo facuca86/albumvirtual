@@ -1,21 +1,10 @@
 # Plan de mejora técnica (priorizado)
 
-## 1) Corregir porcentaje global de avance (falla funcional)
-**Prioridad:** Alta
+## 1) ✅ Corregir porcentaje global de avance — RESUELTO
 
-### Problema
-El porcentaje de avance usa un denominador fijo (`982`). Si cambia el arreglo de equipos o las reglas de conteo, el porcentaje será incorrecto.
-
-### Tarea
-- Reemplazar el valor fijo por un cálculo dinámico del total de stickers según reglas actuales:
-  - `FWCI*` => 8 stickers
-  - `COCA` => 14 stickers
-  - resto => 20 stickers
-- Extraer el cálculo a una función pura reutilizable.
-
-### Criterios de aceptación
-- El porcentaje se calcula contra el total dinámico.
-- Al agregar/quitar equipos o modificar reglas, no se requieren cambios manuales al denominador.
+- Se definió `TOTAL_STICKERS = 981` (1 Panini + 8 FWC Intro + 48×20 selecciones + 12 FWC Historia).
+- Los stickers de Coca-Cola (CC1–CC14) son seleccionables pero **no cuentan** en el total oficial.
+- `completedCount` excluye códigos `CC*`; `completionPercent` y `remainingCount` usan `TOTAL_STICKERS`.
 
 ---
 

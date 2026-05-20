@@ -10,6 +10,8 @@ const STICKERS_FWCI = 8;
 const STICKERS_FWCH = 12;
 const STICKERS_COCA = 14;
 const STICKERS_TEAM = 20;
+// Coca-Cola stickers exist in the album but are not part of the official Panini collection
+const TOTAL_STICKERS = 981;
 
 const teams = [
   'FWCI1',
@@ -369,10 +371,10 @@ export default function PaniniAlbum2026() {
     );
   };
 
-  const completedCount = Object.values(completed).filter((value) => isCompletedSticker(value)).length;
+  const completedCount = Object.entries(completed).filter(([code, value]) => !code.startsWith('CC') && isCompletedSticker(value)).length;
   const repeatedCount = Object.values(completed).filter((value) => isRepeatedSticker(value)).length;
-  const completionPercent = Math.round((completedCount / 982) * 100);
-  const remainingCount = Math.max(980 - completedCount, 0);
+  const completionPercent = Math.round((completedCount / TOTAL_STICKERS) * 100);
+  const remainingCount = Math.max(TOTAL_STICKERS - completedCount, 0);
 
   const shieldCodes = teams
     .filter((team) => !team.startsWith('FWC') && team !== 'COCA')
@@ -886,7 +888,7 @@ export default function PaniniAlbum2026() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md">
             <h3 className="text-2xl font-black italic uppercase mb-6">Estadisticas</h3>
             <div className="space-y-3 font-black">
-              <div>Figuritas completadas: {completedCount} / 980</div>
+              <div>Figuritas completadas: {completedCount} / {TOTAL_STICKERS}</div>
               <div>Porcentaje completado: {completionPercent}%</div>
               <div>Me faltan: {remainingCount}</div>
               <div>Brillantes: {brilliantCompletedCount} / 68</div>
