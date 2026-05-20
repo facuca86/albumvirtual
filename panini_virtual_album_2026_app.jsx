@@ -1030,7 +1030,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
   return (
     <button
       onClick={() => onToggle(sticker.code)}
-      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
     >
       <div>
         <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? 'text-slate-100 font-extrabold' : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
