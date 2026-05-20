@@ -324,6 +324,7 @@ export default function PaniniAlbum2026() {
   };
 
   const nextTeam = () => {
+    window.scrollTo(0, 0);
     if (currentTeam === 'COCA') {
       setCurrentView('home');
       return;
@@ -335,6 +336,7 @@ export default function PaniniAlbum2026() {
   };
 
   const prevTeam = () => {
+    window.scrollTo(0, 0);
     setCurrentTeamIndex((prev) =>
       prev <= 0 ? 0 : prev - 1
     );
@@ -452,7 +454,7 @@ export default function PaniniAlbum2026() {
                 setCurrentTeamIndex(0);
                 setCurrentView('album');
               }}
-              className="bg-white rounded-3xl p-8 shadow-xl text-left hover:scale-105 transition"
+              className="bg-white rounded-3xl p-8 shadow-xl text-left active:scale-95 transition"
             >
               <div className="text-3xl font-black italic uppercase">
                 Explorar Álbum
@@ -461,19 +463,19 @@ export default function PaniniAlbum2026() {
 
             <button
               onClick={() => setCurrentView('teams')}
-              className="bg-white rounded-3xl p-8 shadow-xl text-left hover:scale-105 transition"
+              className="bg-white rounded-3xl p-8 shadow-xl text-left active:scale-95 transition"
             >
               <div className="text-3xl font-black italic uppercase">
-                Indice
+                Índice
               </div>
             </button>
 
             <button
               onClick={() => setShowStats(true)}
-              className="bg-white rounded-3xl p-8 shadow-xl text-left hover:scale-105 transition"
+              className="bg-white rounded-3xl p-8 shadow-xl text-left active:scale-95 transition"
             >
               <div className="text-3xl font-black italic uppercase">
-                Estadisticas
+                Estadísticas
               </div>
             </button>
           </div>
@@ -481,7 +483,7 @@ export default function PaniniAlbum2026() {
 
         {currentView === 'stats-selections' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto">
-            <h2 className="text-3xl font-black italic uppercase mb-6">Estadisticas Selecciones</h2>
+            <h2 className="text-3xl font-black italic uppercase mb-6">Estadísticas Selecciones</h2>
             <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
               {selectionStats.map((item) => (
                 <div key={item.key} className="font-black text-lg sm:text-xl">
@@ -510,7 +512,7 @@ export default function PaniniAlbum2026() {
                   setCurrentTeamIndex(teams.indexOf(team));
                   setCurrentView('album');
                 }}
-                className="bg-white rounded-2xl p-4 shadow font-black italic hover:scale-105 transition flex items-center gap-2"
+                className="bg-white rounded-2xl p-4 shadow font-black italic active:scale-95 transition flex items-center gap-2"
               >
                 <span>{indexTeamIcons[team] || teamData[team]?.flag || '🏳️'}</span>
                 <span>{teamData[team]?.name || team}</span>
@@ -961,7 +963,7 @@ export default function PaniniAlbum2026() {
       {showStats && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md">
-            <h3 className="text-2xl font-black italic uppercase mb-6">Estadisticas</h3>
+            <h3 className="text-2xl font-black italic uppercase mb-6">Estadísticas</h3>
             <div className="space-y-3 font-black">
               <div>Figuritas completadas: {completedCount} / {TOTAL_STICKERS}</div>
               <div>Porcentaje completado: {completionPercent}%</div>
@@ -977,7 +979,7 @@ export default function PaniniAlbum2026() {
                 }}
                 className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
               >
-                Estadisticas Selecciones
+                Estadísticas Selecciones
               </button>
               <button
                 onClick={() => setShowStats(false)}
@@ -1003,7 +1005,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
   return (
     <button
       onClick={() => onToggle(sticker.code)}
-      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
     >
       <div>
         <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? 'text-slate-100 font-extrabold' : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
