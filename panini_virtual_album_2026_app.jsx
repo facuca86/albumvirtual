@@ -666,7 +666,7 @@ export default function PaniniAlbum2026() {
 
             {currentTeam === 'FWCI2' && (
               <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
                   <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
                   <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} />
