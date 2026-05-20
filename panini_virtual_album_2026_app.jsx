@@ -44,31 +44,6 @@ const teamData = {
   NOR: { name: 'Noruega', federation: 'Norges Fotballforbund', flag: '🇳🇴' },
   RSA: { name: 'Sudáfrica', federation: 'South African Football Association', flag: '🇿🇦' },
   KOR: { name: 'República de Corea', federation: 'Korea Football Association', flag: '🇰🇷' },
-  CZE: { name: 'República Checa', federation: 'Football Association of the Czech Republic', flag: '🇨🇿' },
-  CAN: { name: 'Canadá', federation: 'Canada Soccer Association', flag: '🇨🇦' },
-  BIH: { name: 'Bosnia y Herzegovina', federation: 'Nogometni/Fudbalski Savez Bosne i Hercegovine', flag: '🇧🇦' },
-  QAT: { name: 'Catar', federation: 'Qatar Football Association', flag: '🇶🇦' },
-  SUI: { name: 'Suiza', federation: 'Schweizerischer Fussballverband', flag: '🇨🇭' },
-  MAR: { name: 'Marruecos', federation: 'Fédération Royale Marocaine de Football', flag: '🇲🇦' },
-  HAI: { name: 'Haití', federation: 'Fédération Haïtienne de Football', flag: '🇭🇹' },
-  SCO: { name: 'Escocia', federation: 'Scottish Football Association', flag: '🏴' },
-  PAR: { name: 'Paraguay', federation: 'Asociación Paraguaya de Fútbol', flag: '🇵🇾' },
-  AUS: { name: 'Australia', federation: 'Football Australia', flag: '🇦🇺' },
-  TUR: { name: 'Turquía', federation: 'Türkiye Futbol Federasyonu', flag: '🇹🇷' },
-  CUW: { name: 'Curazao', federation: 'Curaçao Football Federation', flag: '🇨🇼' },
-  CIV: { name: 'Costa de Marfil', federation: 'Fédération Ivoirienne de Football', flag: '🇨🇮' },
-  ECU: { name: 'Ecuador', federation: 'Federación Ecuatoriana de Fútbol', flag: '🇪🇨' },
-  NED: { name: 'Países Bajos', federation: 'Koninklijke Nederlandse Voetbalbond', flag: '🇳🇱' },
-  JPN: { name: 'Japón', federation: 'Japan Football Association', flag: '🇯🇵' },
-  SWE: { name: 'Suecia', federation: 'Svenska Fotbollförbundet', flag: '🇸🇪' },
-  TUN: { name: 'Túnez', federation: 'Fédération Tunisienne de Football', flag: '🇹🇳' }
-};
-
-const completeTeamData = {
-  ...teamData,
-
-  RSA: { name: 'Sudáfrica', federation: 'South African Football Association', flag: '🇿🇦' },
-  KOR: { name: 'República de Corea', federation: 'Korea Football Association', flag: '🇰🇷' },
   CZE: { name: 'República Checa', federation: 'Fotbalová asociace České republiky', flag: '🇨🇿' },
   CAN: { name: 'Canadá', federation: 'Canada Soccer Association', flag: '🇨🇦' },
   BIH: { name: 'Bosnia y Herzegovina', federation: 'Nogometni/Fudbalski Savez Bosne i Hercegovine', flag: '🇧🇦' },
@@ -106,8 +81,6 @@ const completeTeamData = {
   GHA: { name: 'Ghana', federation: 'Ghana Football Association', flag: '🇬🇭' },
   USA: { name: 'Estados Unidos', federation: 'U.S. Soccer Federation', flag: '🇺🇸' }
 };
-
-Object.assign(teamData, completeTeamData);
 
 const indexTeamIcons = {
   FWCI1: '⚽',
