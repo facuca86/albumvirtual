@@ -6,7 +6,7 @@ import { teamThemes } from './teamThemes';
 
 const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
 
-const STICKERS_FWCI = 8;
+const STICKERS_FWCI = 9;
 const STICKERS_FWCH = 12;
 const STICKERS_COCA = 14;
 const STICKERS_TEAM = 20;
@@ -26,8 +26,8 @@ const teams = [
 ];
 
 const teamData = {
-  FWCI1: { name: 'FWC Intro', federation: 'Opening Section', flag: '🏆' },
-  FWCI2: { name: 'FWC Intro', federation: 'Opening Section', flag: '🌎' },
+  FWCI1: { name: 'Intro', federation: 'Opening Section', flag: '🏆' },
+  FWCI2: { name: 'Intro', federation: 'Opening Section', flag: '🌎' },
   FWCH1: { name: 'FWC History', federation: 'World Champions', flag: '⭐' },
   FWCH2: { name: 'FWC History', federation: 'World Champions', flag: '⭐' },
   COCA: { name: 'Coca-Cola', federation: 'Promotional Collection', flag: '🥤' },
@@ -387,7 +387,7 @@ export default function PaniniAlbum2026() {
 
   const selectionStats = useMemo(() => {
     const paniniCodes = ['PANINI'];
-    const fwcIntroCodes = Array.from({ length: STICKERS_FWCI }, (_, i) => `FWC${i + 1}`);
+    const fwcIntroCodes = Array.from({ length: 8 }, (_, i) => `FWC${i + 1}`);
     const fwcHistoryCodes = Array.from({ length: STICKERS_FWCH }, (_, i) => `FWC${i + 9}`);
     const cocaCodes = Array.from({ length: STICKERS_COCA }, (_, i) => `CC${i + 1}`);
 
@@ -434,7 +434,7 @@ export default function PaniniAlbum2026() {
   }, [completed, selectionTeams]);
 
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
-    ? ['FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
+    ? ['PANINI','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => isCompletedSticker(completed[code])).length
     : currentTeam.startsWith('FWCH')
     ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19','FWC20']
@@ -534,7 +534,7 @@ export default function PaniniAlbum2026() {
 
         {currentView === 'teams' && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {teams.map((team) => (
+            {teams.filter(team => team !== 'FWCI2').map((team) => (
               <button
                 key={team}
                 onClick={() => {
@@ -608,7 +608,74 @@ export default function PaniniAlbum2026() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 overflow-hidden rounded-[2rem] border-4 border-slate-200 bg-white">
+            {currentTeam === 'FWCI1' && (
+              <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
+                <div className="grid grid-cols-2 gap-2">
+                  <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[4]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                </div>
+                <div className="border-4 border-yellow-500 rounded-xl p-4 bg-gradient-to-br from-yellow-300 via-yellow-200 to-amber-100 text-black mt-3">
+                  <div className="text-center font-black uppercase text-xs mb-2">Cuadro de Honor</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] font-black leading-tight uppercase text-center">
+                    <div>Uruguay 1930</div>
+                    <div>Italia 1934</div>
+                    <div>Italia 1938</div>
+                    <div>Uruguay 1950</div>
+                    <div>Alemania 1954</div>
+                    <div>Brasil 1958</div>
+                    <div>Brasil 1962</div>
+                    <div>Inglaterra 1966</div>
+                    <div>Brasil 1970</div>
+                    <div>Alemania 1974</div>
+                    <div>Argentina 1978</div>
+                    <div>Italia 1982</div>
+                    <div>Argentina 1986</div>
+                    <div>Alemania 1990</div>
+                    <div>Brasil 1994</div>
+                    <div>Francia 1998</div>
+                    <div>Brasil 2002</div>
+                    <div>Italia 2006</div>
+                    <div>España 2010</div>
+                    <div>Alemania 2014</div>
+                    <div>Francia 2018</div>
+                    <div>Argentina 2022</div>
+                  </div>
+                </div>
+                <div className="border-4 border-black rounded-xl p-4 bg-white mt-3">
+                  <div className="font-black uppercase text-xs mb-2">Grupos del Mundial</div>
+                  <div className="flex flex-col gap-1 text-[9px] font-black uppercase leading-tight">
+                    <div>A: México • Sudafrica • Republica de Corea • Republica Checa</div>
+                    <div>B: Canadá • Bosnia-Herzegovina • Catar • Suiza</div>
+                    <div>C: Brasil • Marruecos • Haití • Escocia</div>
+                    <div>D: Estados Unidos • Paraguay • Australia • Turquía</div>
+                    <div>E: Alemania • Curazao • Costa de Marfil • Ecuador</div>
+                    <div>F: Países Bajos • Japón • Suecia • Túnez</div>
+                    <div>G: Bélgica • Egipto • Irán • Nueva Zelanda</div>
+                    <div>H: España • Cabo Verde • Arabia Saudita • Uruguay</div>
+                    <div>I: Francia • Senegal • Iraq • Noruega</div>
+                    <div>J: Argentina • Argelia • Austria • Jordania</div>
+                    <div>K: Portugal • Congo DR • Uzbekistán • Colombia</div>
+                    <div>L: Inglaterra • Croacia • Australia • Panamá</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentTeam === 'FWCI2' && (
+              <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
+                <div className="grid grid-cols-2 gap-2">
+                  <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                </div>
+              </div>
+            )}
+
+            <div className={`overflow-hidden rounded-[2rem] border-4 border-slate-200 bg-white ${currentTeam.startsWith('FWCI') ? 'hidden lg:grid lg:grid-cols-2' : 'grid lg:grid-cols-2'}`}>
               {currentTeam.startsWith('FWCH') ? (
                 <>
                   <div className="p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 bg-[#f7f5f2]">
