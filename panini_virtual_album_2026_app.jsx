@@ -6,6 +6,11 @@ import { teamThemes } from './teamThemes';
 
 const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
 
+const STICKERS_FWCI = 8;
+const STICKERS_FWCH = 12;
+const STICKERS_COCA = 14;
+const STICKERS_TEAM = 20;
+
 const teams = [
   'FWCI1',
   'FWCI2',
@@ -197,7 +202,7 @@ export default function PaniniAlbum2026() {
     flag: '🏳️'
   };
 
-  const stickerCount = currentTeam.startsWith('FWCI') ? 8 : currentTeam.startsWith('FWCH') ? 12 : currentTeam === 'COCA' ? 14 : 20;
+  const stickerCount = currentTeam.startsWith('FWCI') ? STICKERS_FWCI : currentTeam.startsWith('FWCH') ? STICKERS_FWCH : currentTeam === 'COCA' ? STICKERS_COCA : STICKERS_TEAM;
 
   const isRepeatedSticker = (value) => value === 'repeated';
   const isCompletedSticker = (value) => value === true || value === 'repeated';
@@ -255,15 +260,15 @@ export default function PaniniAlbum2026() {
         }
         if (id === 2) {
           code = 'FWC6';
-          label = 'Poster Canadá';
+          label = 'Póster Canadá';
         }
         if (id === 3) {
           code = 'FWC7';
-          label = 'Poster México';
+          label = 'Póster México';
         }
         if (id === 4) {
           code = 'FWC8';
-          label = 'Poster USA';
+          label = 'Póster USA';
         }
       } else if (currentTeam.startsWith('FWCI')) {
         if (id === 1) {
@@ -283,7 +288,7 @@ export default function PaniniAlbum2026() {
           horizontal = true;
         }
         if (id === 5) {
-          label = 'Poster';
+          label = 'Póster';
         }
       } else if (currentTeam === 'COCA') {
         label = playerNames.CC?.[id] || `Jugador ${id}`;
@@ -372,7 +377,7 @@ export default function PaniniAlbum2026() {
   const shieldCodes = teams
     .filter((team) => !team.startsWith('FWC') && team !== 'COCA')
     .map((team) => `${team}1`);
-  const fwcBrilliantCodes = Array.from({ length: 20 }, (_, i) => `FWC${i + 1}`);
+  const fwcBrilliantCodes = Array.from({ length: STICKERS_TEAM }, (_, i) => `FWC${i + 1}`);
   const brilliantCodes = [...shieldCodes, ...fwcBrilliantCodes];
   const brilliantCompletedCount = brilliantCodes.filter((code) => isCompletedSticker(completed[code])).length;
 
@@ -380,9 +385,9 @@ export default function PaniniAlbum2026() {
 
   const selectionStats = useMemo(() => {
     const paniniCodes = ['PANINI'];
-    const fwcIntroCodes = Array.from({ length: 8 }, (_, i) => `FWC${i + 1}`);
-    const fwcHistoryCodes = Array.from({ length: 12 }, (_, i) => `FWC${i + 9}`);
-    const cocaCodes = Array.from({ length: 14 }, (_, i) => `CC${i + 1}`);
+    const fwcIntroCodes = Array.from({ length: STICKERS_FWCI }, (_, i) => `FWC${i + 1}`);
+    const fwcHistoryCodes = Array.from({ length: STICKERS_FWCH }, (_, i) => `FWC${i + 9}`);
+    const cocaCodes = Array.from({ length: STICKERS_COCA }, (_, i) => `CC${i + 1}`);
 
     return [
       {
@@ -400,7 +405,7 @@ export default function PaniniAlbum2026() {
         completed: fwcIntroCodes.filter((code) => isCompletedSticker(completed[code])).length
       },
       ...selectionTeams.map((team) => {
-        const teamCodes = Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
+        const teamCodes = Array.from({ length: STICKERS_TEAM }, (_, i) => `${team}${i + 1}`);
         return {
           key: team,
           emoji: teamData[team]?.flag || '🏳️',
