@@ -41,8 +41,8 @@ MEX: {
   20: "César Huerta"
 },
   RSA: {      
-      2: "Ronwen Williams",
-  3: "Sipho Chaine",
+      2: "Sipho Chaine",
+  3: "Ronwen Williams",
   4: "Aubrey Modiba",
   5: "Samukelo Kabini",
   6: "Mbekezeli Mbokazi",
