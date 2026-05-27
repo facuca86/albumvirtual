@@ -42,6 +42,8 @@ Arquitectónicamente, el proyecto está orientado a:
   - Lógica de estilos por selección (`teamThemes`).
   - Cálculo de stickers por sección/equipo.
   - Carga/guardado de progreso con `getDoc`/`setDoc` + fallback local.
+  - Exportación del progreso como archivo JSON descargable.
+  - Importación de progreso desde un archivo JSON con validación y persistencia inmediata.
   - Estados de navegación y visualización.
 - Incluye reglas especiales para secciones como `FWCI*`, `FWCH*` y `COCA`.
 
@@ -80,6 +82,33 @@ Se solicitó explícitamente:
   - Estado de solicitudes/tareas pendientes.
   - Recomendaciones técnicas generales.
 - No se modificó lógica de negocio, UI ni configuración de runtime.
+
+### 3.4 Exportar / Importar progreso (iteración actual)
+
+**Motivación:** permitir al usuario hacer una copia de seguridad de su progreso y restaurarlo en otro dispositivo o ante pérdida de datos.
+
+#### Cambios realizados — solo en `panini_virtual_album_2026_app.jsx`
+
+| Tipo | Ubicación | Detalle |
+|---|---|---|
+| Estado nuevo | línea 121 | `const [importMessage, setImportMessage] = useState('')` — controla el mensaje de confirmación transitorio |
+| Handler nuevo | `handleExport` | Serializa `completed` con `JSON.stringify`, crea un `Blob` de tipo `application/json`, genera una URL temporal con `URL.createObjectURL`, dispara la descarga como `panini2026_backup.json` y libera la URL con `URL.revokeObjectURL` |
+| Handler nuevo | `handleImport` | Lee el archivo `.json` seleccionado con `FileReader`; al cargar, parsea el JSON y valida que sea un objeto no nulo y no array; llama `setCompleted(parsed)`, persiste en `localStorage` y en Firestore si `progressDocRef` está disponible; muestra `✅ Progreso importado` durante 2 segundos; resetea el input para permitir reimportar el mismo archivo |
+| JSX — modal Stats | bloque `{showStats && ...}` | Se añadió una primera fila de botones (verde **EXPORTAR**, azul **IMPORTAR**) antes de los botones existentes; **IMPORTAR** es un `<label>` que envuelve un `<input type="file" accept=".json" className="hidden">` para abrir el selector de archivos nativo; debajo aparece el `importMessage` condicional |
+
+#### Comportamiento en tiempo de ejecución
+
+1. **Exportar**: el usuario abre el modal de Estadísticas y pulsa **EXPORTAR** → el navegador descarga `panini2026_backup.json` con el estado actual de `completed`.
+2. **Importar**: el usuario pulsa **IMPORTAR** → se abre el selector de archivos del sistema → al seleccionar un `.json` válido, el progreso se restaura de inmediato en memoria, `localStorage` y Firestore (si está configurado) → aparece brevemente el mensaje de confirmación.
+
+#### Lo que no se modificó
+
+- No se tocó lógica de negocio (`toggleSticker`, ciclo de stickers, conteos).
+- No se modificó el layout del álbum de escritorio ni móvil.
+- No se alteraron `playerNames.js`, `teamThemes.js`, `firebase.js` ni `index.html`.
+- No se agregaron dependencias externas.
+
+---
 
 ### 3.3 Estado de las mejoras registradas en `TASKS_REFACTOR.md`
 1. ✅ **Total de stickers oficiales** — Se definió `TOTAL_STICKERS = 981`. La constante se usa en `completionPercent`, `remainingCount` y en la UI. Los stickers de Coca-Cola (CC1–CC14) se excluyen del conteo aunque sean seleccionables.
