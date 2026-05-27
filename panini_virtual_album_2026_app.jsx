@@ -5,6 +5,9 @@ import { teamThemes } from './teamThemes';
 
 const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
 
+const ALBUM_OWNER = "Facundo";
+const VIEW_PARAM = new URLSearchParams(window.location.search).get('view');
+
 const STICKERS_FWCI = 9;
 const STICKERS_FWCH = 12;
 const STICKERS_COCA = 14;
@@ -113,11 +116,13 @@ const getInnerPanelClass = (teamCode) => {
 };
 
 export default function PaniniAlbum2026() {
+  if (VIEW_PARAM === 'repetidas') return <RepeatidasView />;
   const [currentView, setCurrentView] = useState('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [completed, setCompleted] = useState({});
   const [showStats, setShowStats] = useState(false);
   const [importMessage, setImportMessage] = useState('');
+  const [showQR, setShowQR] = useState(false);
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -1034,6 +1039,12 @@ export default function PaniniAlbum2026() {
                 Estadísticas Selecciones
               </button>
               <button
+                onClick={() => setShowQR(true)}
+                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                Generar QR
+              </button>
+              <button
                 onClick={() => setShowStats(false)}
                 className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
               >
@@ -1043,6 +1054,7 @@ export default function PaniniAlbum2026() {
           </div>
         </div>
       )}
+      {showQR && <QRModal onClose={() => setShowQR(false)} />}
     </div>
   );
 }
@@ -1069,5 +1081,166 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
         </div>
       </div>
     </button>
+  );
+}
+
+const FWC_LABELS = {
+  PANINI: '00', FWC1: 'Logo Copa 1', FWC2: 'Logo Copa 2', FWC3: 'Mascotas',
+  FWC4: 'Póster', FWC5: 'Balón Oficial', FWC6: 'Póster Canadá',
+  FWC7: 'Póster México', FWC8: 'Póster USA',
+  FWC9: 'ITALIA 1934', FWC10: 'URUGUAY 1950', FWC11: 'RF ALEMANIA 1954',
+  FWC12: 'BRASIL 1958', FWC13: 'BRASIL 1962', FWC14: 'RF ALEMANIA 1974',
+  FWC15: 'ARGENTINA 1986', FWC16: 'BRASIL 1994', FWC17: 'BRASIL 2002',
+  FWC18: 'ITALIA 2006', FWC19: 'ALEMANIA 2014', FWC20: 'ARGENTINA 2022',
+};
+
+function getTeamForCode(code) {
+  if (code === 'PANINI') return 'FWCI1';
+  const fwcMatch = code.match(/^FWC(\d+)$/);
+  if (fwcMatch) {
+    const n = parseInt(fwcMatch[1]);
+    if (n <= 4) return 'FWCI1';
+    if (n <= 8) return 'FWCI2';
+    if (n <= 14) return 'FWCH1';
+    return 'FWCH2';
+  }
+  if (code.startsWith('CC')) return 'COCA';
+  const m = code.match(/^([A-Z]+)\d+$/);
+  return (m && teamData[m[1]]) ? m[1] : null;
+}
+
+function getPlayerNameForCode(code, team) {
+  if (code === 'PANINI' || code.match(/^FWC\d+$/)) return FWC_LABELS[code] || code;
+  if (team === 'COCA') {
+    const m = code.match(/^CC(\d+)$/);
+    return m ? (playerNames.CC?.[parseInt(m[1])] || code) : code;
+  }
+  const m = code.match(/^[A-Z]+(\d+)$/);
+  if (m) {
+    const id = parseInt(m[1]);
+    if (id === 1) return 'Escudo';
+    if (id === 13) return 'Foto equipo';
+    return playerNames[team]?.[id] || `Jugador ${id}`;
+  }
+  return code;
+}
+
+function QRModal({ onClose }) {
+  const qrRef = useRef(null);
+  const url = window.location.origin + window.location.pathname + '?view=repetidas';
+
+  useEffect(() => {
+    if (qrRef.current && window.QRCode) {
+      new window.QRCode(qrRef.current, { text: url, width: 200, height: 200 });
+    }
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs w-full">
+        <h3 className="text-lg font-black italic uppercase">Figuritas Repetidas</h3>
+        <div ref={qrRef} />
+        <p className="text-xs text-slate-400 text-center break-all">{url}</p>
+        <button
+          onClick={onClose}
+          className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black w-full"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RepeatidasView() {
+  const [stickerData, setStickerData] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (progressDocRef) {
+          const snap = await getDoc(progressDocRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            setStickerData(data?.stickers || {});
+            return;
+          }
+        }
+        const local = localStorage.getItem(LOCAL_STORAGE_KEY);
+        setStickerData(local ? JSON.parse(local) : {});
+      } catch {
+        setStickerData({});
+      }
+    };
+    load();
+  }, []);
+
+  const grouped = useMemo(() => {
+    if (!stickerData) return [];
+    const byTeam = {};
+    for (const [code, value] of Object.entries(stickerData)) {
+      if (value !== 'repeated') continue;
+      const team = getTeamForCode(code);
+      if (!team) continue;
+      if (!byTeam[team]) byTeam[team] = [];
+      byTeam[team].push(code);
+    }
+    return teams
+      .filter(t => byTeam[t])
+      .map(t => ({ team: t, info: teamData[t], codes: byTeam[t] }));
+  }, [stickerData]);
+
+  if (!stickerData) {
+    return (
+      <div className="min-h-screen bg-[#880E4F] flex items-center justify-center">
+        <div className="text-white font-black text-xl">Cargando...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#880E4F]">
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <h1 className="text-lg font-black italic uppercase text-slate-800">
+            Figuritas repetidas de {ALBUM_OWNER}
+          </h1>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest">FIFA World Cup 2026</p>
+        </div>
+      </header>
+      <main className="max-w-2xl mx-auto px-4 py-5 space-y-3">
+        {grouped.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 text-center text-slate-800">
+            <div className="text-4xl mb-3">🙌</div>
+            <div className="font-black text-xl">¡No hay repetidas!</div>
+            <div className="text-slate-500 mt-2 text-sm">
+              Cuando tengas figuritas repetidas aparecerán acá.
+            </div>
+          </div>
+        ) : grouped.map(({ team, info, codes }) => (
+          <div key={team} className="bg-white rounded-2xl p-4 shadow">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl leading-none">{info?.flag || '🏳️'}</span>
+              <div>
+                <div className="font-black uppercase text-sm text-slate-800">{info?.name || team}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  {codes.length} repetida{codes.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {codes.map(code => {
+                const name = getPlayerNameForCode(code, team);
+                return (
+                  <span key={code} className="bg-slate-500 text-white text-xs font-black px-2.5 py-1 rounded-lg">
+                    {code}{name !== code ? ` · ${name}` : ''}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </main>
+    </div>
   );
 }
