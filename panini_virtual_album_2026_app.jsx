@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, doc, getDoc, setDoc } from './firebase';
 import { playerNames } from './playerNames';
 import { teamThemes } from './teamThemes';
 
