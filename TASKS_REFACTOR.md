@@ -8,35 +8,27 @@
 
 ---
 
-## 2) Corregir textos con error ortográfico (tipográfico)
-**Prioridad:** Media
+## 2) ✅ Corregir textos con error ortográfico (tipográfico) — RESUELTO
 
 ### Problema
-Se usa "Poster" en labels en español donde debería ser "Póster".
+Se usaba "Poster" en labels en español donde debería ser "Póster".
 
-### Tarea
-- Actualizar todos los labels de UI para usar "Póster".
-- Revisar consistencia de acentuación en todos los textos visibles.
-
-### Criterios de aceptación
-- No existen ocurrencias de "Poster" en textos de UI.
-- Se mantiene consistencia ortográfica en español.
+### Solución implementada
+- Todos los labels de UI fueron actualizados a "Póster" (con acento).
+- Incluye: "Póster", "Póster Canadá", "Póster México", "Póster USA".
+- No quedan ocurrencias de "Poster" sin acento en el código.
 
 ---
 
-## 3) Aclarar fuente de verdad de datos de equipos (discrepancia de documentación/comentarios)
-**Prioridad:** Media
+## 3) ✅ Aclarar fuente de verdad de datos de equipos — RESUELTO
 
 ### Problema
-Hay dos objetos (`teamData` y `completeTeamData`) con duplicados y sobrescritura posterior (`Object.assign`), sin comentario que explique intención o precedencia.
+Había dos objetos (`teamData` y `completeTeamData`) con duplicados y sobrescritura posterior mediante `Object.assign`.
 
-### Tarea
-- Documentar explícitamente la estrategia de datos y precedencia, o unificar ambos objetos en una sola estructura.
-- Agregar comentario técnico breve al bloque si se conserva la sobrescritura.
-
-### Criterios de aceptación
-- Queda claro cuál estructura es fuente de verdad.
-- Un nuevo colaborador puede entender el flujo de datos sin inferencias implícitas.
+### Solución implementada
+- Se consolidó todo en un único objeto `teamData`.
+- Se eliminaron `completeTeamData` y el bloque `Object.assign`.
+- La fuente de verdad única es `teamData`; no hay más ambigüedad de precedencia.
 
 ---
 
