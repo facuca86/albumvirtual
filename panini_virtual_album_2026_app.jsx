@@ -118,6 +118,7 @@ export default function PaniniAlbum2026() {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [completed, setCompleted] = useState({});
   const [showStats, setShowStats] = useState(false);
+  const [importMessage, setImportMessage] = useState('');
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -340,6 +341,38 @@ export default function PaniniAlbum2026() {
     setCurrentTeamIndex((prev) =>
       prev <= 0 ? 0 : prev - 1
     );
+  };
+
+  const handleExport = () => {
+    const json = JSON.stringify(completed);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'panini2026_backup.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return;
+        setCompleted(parsed);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+        if (progressDocRef) {
+          try { await setDoc(progressDocRef, { stickers: parsed }); } catch (_) {}
+        }
+        setImportMessage('✅ Progreso importado');
+        setTimeout(() => setImportMessage(''), 2000);
+      } catch (_) {}
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const completedCount = Object.entries(completed).filter(([code, value]) => !code.startsWith('CC') && isCompletedSticker(value)).length;
@@ -972,6 +1005,26 @@ export default function PaniniAlbum2026() {
               <div>Repetidas: {repeatedCount}</div>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                onClick={handleExport}
+                className="bg-green-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                EXPORTAR
+              </button>
+              <label className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black cursor-pointer">
+                IMPORTAR
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={handleImport}
+                />
+              </label>
+              {importMessage && (
+                <span className="w-full text-green-600 font-black">{importMessage}</span>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
               <button
                 onClick={() => {
                   setShowStats(false);
