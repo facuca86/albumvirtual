@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
 
@@ -24,6 +24,8 @@ const hasFirebaseConfig = Boolean(firebaseConfig.apiKey && firebaseConfig.projec
 export const db = hasFirebaseConfig
   ? getFirestore(initializeApp(firebaseConfig))
   : null;
+
+export { doc, getDoc, setDoc };
 
 if (!hasFirebaseConfig) {
   console.warn('Firebase no está configurado. Se usará almacenamiento local en este navegador.');
