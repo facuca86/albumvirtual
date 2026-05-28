@@ -113,7 +113,7 @@ const getTeamGradientClass = (teamCode) => {
 };
 
 const getInnerPanelClass = (teamCode, darkMode = false) => {
-  if (teamCode && teamCode.startsWith('FWCI')) return getTeamGradientClass(teamCode);
+  if (teamCode && teamCode.startsWith('FWCI')) return 'bg-[#1a1a2e]';
   return darkMode ? 'bg-[#1e1e30]' : 'bg-[#f7f5f2]';
 };
 
@@ -609,7 +609,7 @@ export default function PaniniAlbum2026() {
 
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 flex-wrap">
-                  <h2 className={`text-3xl sm:text-5xl font-black italic uppercase break-words ${isTeamDark(currentTeam) ? 'text-white drop-shadow-lg' : 'text-slate-800'}`}>
+                  <h2 className={`text-3xl sm:text-5xl font-black italic uppercase break-words ${isTeamDark(currentTeam) || currentTeam.startsWith('FWCH') ? 'text-white drop-shadow-lg' : 'text-slate-800'}`}>
                     {currentTeamInfo.name}
                   </h2>
                   <button
@@ -620,12 +620,12 @@ export default function PaniniAlbum2026() {
                   </button>
                 </div>
 
-                <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : isTeamDark(currentTeam) ? 'text-white/80' : 'text-slate-500'}`}>
+                <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : isTeamDark(currentTeam) || currentTeam.startsWith('FWCH') ? 'text-white/80' : 'text-slate-500'}`}>
                   {currentTeamInfo.federation}
                 </div>
 
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  <div className={`text-2xl font-black ${currentTeam === 'COCA' ? 'text-white' : isTeamDark(currentTeam) ? 'text-white' : 'text-blue-700'}`}>
+                  <div className={`text-2xl font-black ${currentTeam === 'COCA' ? 'text-white' : isTeamDark(currentTeam) || currentTeam.startsWith('FWCH') ? 'text-white' : 'text-blue-700'}`}>
                     {currentTeamCompleted}/{stickerCount}
                   </div>
                 </div>
@@ -733,15 +733,15 @@ export default function PaniniAlbum2026() {
             <div className={`overflow-hidden rounded-[2rem] border-4 transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-200 bg-white'} ${currentTeam.startsWith('FWCI') ? 'hidden lg:grid lg:grid-cols-2' : 'grid lg:grid-cols-2'}`}>
               {currentTeam.startsWith('FWCH') ? (
                 <>
-                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-300 bg-[#f7f5f2]'}`}>
+                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-300 bg-[#0d2167]'}`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       <div className="col-span-4 hidden lg:block">
-                        <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-[#0d1b4d]">
+                        <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-white">
                           FIFA WORLD CUP HISTORY
                         </div>
                         <div className="flex items-center gap-3 sm:gap-4 mb-4">
                           <div className="text-5xl sm:text-6xl">⭐</div>
-                          <div className="font-black uppercase text-[10px] sm:text-sm leading-tight text-[#0d1b4d]">
+                          <div className="font-black uppercase text-[10px] sm:text-sm leading-tight text-white">
                             WORLD CHAMPIONS
                           </div>
                         </div>
