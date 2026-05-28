@@ -125,9 +125,9 @@ Esto garantiza que el progreso no se pierde aunque no haya conexión.
 
 Las 48 selecciones del FIFA World Cup 2026, organizadas por confederación:
 
-**CONMEBOL:** Argentina, Bolivia, Brasil, Chile, Colombia, Ecuador, Paraguay, Perú, Uruguay, Venezuela  
+**CONMEBOL:** Argentina, Brasil, Colombia, Ecuador, Paraguay, Uruguay  
 **UEFA:** Alemania, Bélgica, Croacia, Dinamarca, España, Francia, Inglaterra, Países Bajos, Polonia, Portugal, Serbia, Suiza, entre otras  
-**CONCACAF:** Canadá, Costa Rica, Estados Unidos, Jamaica, México, Panamá  
+**CONCACAF:** Canadá, Curazao, Estados Unidos, Jamaica, México, Panamá  
 **CAF:** Camerún, Egipto, Marruecos, Nigeria, Senegal, entre otras  
 **AFC:** Arabia Saudita, Australia, Japón, Corea del Sur, entre otras  
 **OFC:** Nueva Zelanda  
