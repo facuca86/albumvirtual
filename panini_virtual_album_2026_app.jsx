@@ -683,10 +683,10 @@ export default function PaniniAlbum2026() {
             {currentTeam === 'FWCI2' && (
               <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
                 <div className="grid grid-cols-4 gap-2">
-                  <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <div className="col-span-2"><Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} /></div>
+                  <div className="col-span-2"><Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} /></div>
+                  <div className="col-span-2"><Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} /></div>
+                  <div className="col-span-2"><Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} /></div>
                 </div>
               </div>
             )}
@@ -841,6 +841,15 @@ export default function PaniniAlbum2026() {
                         </div>
                       </div>
                     </>
+                  ) : currentTeam === 'FWCI2' ? (
+                    <>
+                      <div className="col-span-2">
+                        <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                      </div>
+                      <div className="col-span-2 col-start-3">
+                        <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                      </div>
+                    </>
                   ) : stickers.slice(0, 2).map((sticker) => (
                     <Sticker
                       key={sticker.code}
@@ -945,7 +954,7 @@ export default function PaniniAlbum2026() {
                         />
                       </div>
 
-                      <div className="col-span-2 row-span-2">
+                      <div className="col-span-2">
                         <Sticker
                           sticker={stickers[3]}
                           currentTeam={currentTeam}
