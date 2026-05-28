@@ -1062,11 +1062,29 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
     team: 'Foto Equipo'
   };
 
+  const isPlayerSticker = sticker.type === 'player'
+    && !sticker.code.startsWith('FWC')
+    && !sticker.code.startsWith('CC')
+    && sticker.code !== 'PANINI';
+
+  const silhouetteColor = sticker.repeated ? '#94a3b8' : sticker.completed ? '#bbf7d0' : '#e2e8f0';
+
   return (
     <button
       onClick={() => onToggle(sticker.code)}
-      className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
     >
+      {isPlayerSticker && (
+        <svg
+          viewBox="0 0 100 120"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: '6%', left: '20%', width: '60%', opacity: 0.45, pointerEvents: 'none' }}
+        >
+          <circle cx="50" cy="35" r="22" fill={silhouetteColor} />
+          <path d="M 50 57 C 28 57 10 75 10 120 L 90 120 C 90 75 72 57 50 57 Z" fill={silhouetteColor} />
+        </svg>
+      )}
       <div>
         <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? 'text-slate-100 font-extrabold' : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
           {sticker.code}

@@ -37,6 +37,16 @@ Sin pegar → Pegada → Repetida → Sin pegar → ...
 - **Pegada** — Borde verde, ya está en tu álbum.
 - **Repetida** — Tono gris, la tienes de más para intercambiar.
 
+### Silueta en figuritas de jugador
+
+Cada tarjeta de jugador muestra una silueta decorativa tipo carnet (cabeza + hombros) en el tercio superior. La silueta adapta su color al estado de la figurita:
+
+- **Sin pegar** — silueta gris claro.
+- **Pegada** — silueta verde claro.
+- **Repetida** — silueta gris medio.
+
+La silueta es un elemento decorativo de fondo; no aparece en escudos, fotos de equipo ni figuritas especiales (FWC, historia del mundial, Coca-Cola).
+
 ### Figuritas brillantes
 
 Las figuritas de escudo de cada selección (posición 1 de cada equipo) y las figuritas de introducción del mundial son consideradas **figuritas brillantes** (68 en total). Las estadísticas te muestran cuántas llevas de este tipo especial.

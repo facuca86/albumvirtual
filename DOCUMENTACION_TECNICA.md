@@ -171,6 +171,35 @@ Esta vista es **pública y de solo lectura**: cualquier persona con el link (o e
 
 ---
 
+### 3.6 Silueta decorativa en figuritas de jugador
+
+**Motivación:** mejorar la percepción visual de las figuritas de jugador vacías o completadas, añadiendo una silueta tipo carnet/ID que refuerza el estado de colección sin interferir con la legibilidad del texto.
+
+#### Cambios realizados — solo en el componente `Sticker` de `panini_virtual_album_2026_app.jsx`
+
+| Elemento | Detalle |
+|---|---|
+| `isPlayerSticker` | Booleano local: `sticker.type === 'player'` + exclusión explícita de códigos `FWC*`, `CC*` y `PANINI`. Necesario porque esos tipos especiales usan el valor por defecto `'player'` para `type` y habrían mostrado la silueta incorrectamente. |
+| `silhouetteColor` | Color hexadecimal del SVG según estado: `#e2e8f0` (slate-200, vacía) / `#bbf7d0` (green-200, pegada) / `#94a3b8` (slate-400, repetida). |
+| SVG inline | `viewBox="0 0 100 120"` con un `<circle cx="50" cy="35" r="22">` (cabeza) y un `<path>` de curvas cúbicas (hombros/busto). Posición absoluta centrada en el tercio superior de la tarjeta (`top: 6%`, `left: 20%`, `width: 60%`). Opacidad `0.45`. `pointerEvents: none`. `aria-hidden="true"`. |
+| `relative` en `<button>` | Se agregó la clase `relative` al botón para que el SVG posicionado absolutamente quede contenido dentro de la tarjeta. |
+
+#### Comportamiento
+
+- La silueta aparece **solo** en figuritas de tipo `player` de selecciones nacionales (ej. `ARG2`, `MEX5`).
+- No aparece en: escudos (`type === 'shield'`), fotos de equipo (`type === 'team'`), ni en figuritas especiales FWC, FWCH, COCA.
+- El color de la silueta acompaña el estado de la figurita: gris claro (sin pegar), verde claro (pegada), gris medio (repetida).
+- El SVG es un elemento decorativo de fondo; no afecta clicks ni legibilidad del código/nombre.
+
+#### Lo que no se modificó
+
+- Ninguna lógica de negocio (`toggleSticker`, conteos, persistencia).
+- Tamaños, proporciones (`aspect-[2/3]`, `aspect-[3/2]`) ni bordes de las tarjetas.
+- Layout de escritorio y móvil.
+- Archivos `playerNames.js`, `teamThemes.js`, `firebase.js`, `index.html`.
+
+---
+
 ### 3.3 Estado de las mejoras registradas en `TASKS_REFACTOR.md`
 1. ✅ **Total de stickers oficiales** — Se definió `TOTAL_STICKERS = 981`. La constante se usa en `completionPercent`, `remainingCount` y en la UI. Los stickers de Coca-Cola (CC1–CC14) se excluyen del conteo aunque sean seleccionables.
 2. ✅ **Correcciones tipográficas “Poster” → “Póster”** — Resuelto. Todos los labels usan “Póster” con acento: “Póster”, “Póster Canadá”, “Póster México”, “Póster USA”. No quedan ocurrencias sin acento.
