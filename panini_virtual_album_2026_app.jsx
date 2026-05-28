@@ -4,6 +4,7 @@ import { playerNames } from './playerNames';
 import { teamThemes } from './teamThemes';
 
 const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
+const LOCAL_STORAGE_DARK_KEY = 'paniniWorldCup2026_darkMode';
 
 const ALBUM_OWNER = "Facundo";
 const VIEW_PARAM = new URLSearchParams(window.location.search).get('view');
@@ -94,6 +95,7 @@ const indexTeamIcons = {
 
 
 const progressDocRef = db ? doc(db, 'albumProgress', 'paniniWorldCup2026') : null;
+const settingsDocRef = db ? doc(db, 'albumSettings', 'paniniWorldCup2026') : null;
 
 const getThemeKey = (teamCode) => {
   if (teamCode && teamCode.startsWith('FWCI')) return 'FWCINTRO';
@@ -110,9 +112,9 @@ const getTeamGradientClass = (teamCode) => {
   return gradient ? `bg-gradient-to-r ${gradient}` : 'bg-white';
 };
 
-const getInnerPanelClass = (teamCode) => {
+const getInnerPanelClass = (teamCode, darkMode = false) => {
   if (teamCode && teamCode.startsWith('FWCI')) return getTeamGradientClass(teamCode);
-  return 'bg-[#f7f5f2]';
+  return darkMode ? 'bg-[#1e1e30]' : 'bg-[#f7f5f2]';
 };
 
 export default function PaniniAlbum2026() {
@@ -123,6 +125,7 @@ export default function PaniniAlbum2026() {
   const [showStats, setShowStats] = useState(false);
   const [importMessage, setImportMessage] = useState('');
   const [showQR, setShowQR] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -155,6 +158,23 @@ export default function PaniniAlbum2026() {
     };
 
     loadProgress();
+  }, []);
+
+  useEffect(() => {
+    const loadDarkMode = async () => {
+      try {
+        if (settingsDocRef) {
+          const snap = await getDoc(settingsDocRef);
+          if (snap.exists() && typeof snap.data()?.darkMode === 'boolean') {
+            setDarkMode(snap.data().darkMode);
+            return;
+          }
+        }
+      } catch {}
+      const local = localStorage.getItem(LOCAL_STORAGE_DARK_KEY);
+      if (local !== null) setDarkMode(local === 'true');
+    };
+    loadDarkMode();
   }, []);
 
   useEffect(() => {
@@ -328,6 +348,15 @@ export default function PaniniAlbum2026() {
     });
   };
 
+  const toggleDarkMode = async () => {
+    const newVal = !darkMode;
+    setDarkMode(newVal);
+    localStorage.setItem(LOCAL_STORAGE_DARK_KEY, String(newVal));
+    if (settingsDocRef) {
+      try { await setDoc(settingsDocRef, { darkMode: newVal }, { merge: true }); } catch (_) {}
+    }
+  };
+
   const nextTeam = () => {
     window.scrollTo(0, 0);
     if (currentTeam === 'COCA') {
@@ -450,23 +479,23 @@ export default function PaniniAlbum2026() {
     : stickers.filter((s) => s.completed).length;
 
   return (
-    <div className="min-h-screen bg-[#880E4F] text-slate-800">
-      <header className="bg-white border-b shadow-sm sticky top-0 z-50">
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#0f0f1a] text-white' : 'bg-[#880E4F] text-slate-800'}`}>
+      <header className={`border-b shadow-sm sticky top-0 z-50 transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4 flex flex-row gap-2 justify-between items-center">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-3xl font-black italic truncate">
+            <h1 className={`text-lg sm:text-3xl font-black italic truncate ${darkMode ? 'text-white' : ''}`}>
               ÁLBUM VIRTUAL 2026
             </h1>
 
-            <p className="hidden sm:block text-xs uppercase tracking-[0.3em] text-slate-500">
+            <p className={`hidden sm:block text-xs uppercase tracking-[0.3em] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
               FIFA WORLD CUP
             </p>
 
-            <div className="mt-0.5 sm:mt-2 text-xs sm:text-sm font-black text-pink-800">
+            <div className={`mt-0.5 sm:mt-2 text-xs sm:text-sm font-black ${darkMode ? 'text-pink-400' : 'text-pink-800'}`}>
               {completionPercent}% COMPLETADO
             </div>
 
-            <div className="mt-1 sm:mt-2 h-2 sm:h-2.5 w-24 sm:w-56 rounded-full bg-slate-200 overflow-hidden">
+            <div className={`mt-1 sm:mt-2 h-2 sm:h-2.5 w-24 sm:w-56 rounded-full overflow-hidden ${darkMode ? 'bg-[#2a2a4a]' : 'bg-slate-200'}`}>
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-lime-500 to-green-600 transition-all"
                 style={{ width: `${completionPercent}%` }}
@@ -474,12 +503,20 @@ export default function PaniniAlbum2026() {
             </div>
           </div>
 
-          <button
-            onClick={() => setCurrentView('home')}
-            className="bg-red-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base shrink-0"
-          >
-            HOME
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={toggleDarkMode}
+              className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base transition-colors duration-300 ${darkMode ? 'bg-white text-slate-900' : 'bg-slate-800 text-white'}`}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+            <button
+              onClick={() => setCurrentView('home')}
+              className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base transition-colors duration-300 ${darkMode ? 'bg-white text-red-600' : 'bg-red-600 text-white'}`}
+            >
+              HOME
+            </button>
+          </div>
         </div>
       </header>
 
@@ -491,7 +528,7 @@ export default function PaniniAlbum2026() {
                 setCurrentTeamIndex(0);
                 setCurrentView('album');
               }}
-              className="bg-white rounded-3xl p-8 shadow-xl text-left active:scale-95 transition"
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Explorar Álbum
@@ -500,7 +537,7 @@ export default function PaniniAlbum2026() {
 
             <button
               onClick={() => setCurrentView('teams')}
-              className="bg-white rounded-3xl p-8 shadow-xl text-left active:scale-95 transition"
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Índice
@@ -509,7 +546,7 @@ export default function PaniniAlbum2026() {
 
             <button
               onClick={() => setShowStats(true)}
-              className="bg-white rounded-3xl p-8 shadow-xl text-left active:scale-95 transition"
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Estadísticas
@@ -519,7 +556,7 @@ export default function PaniniAlbum2026() {
         )}
 
         {currentView === 'stats-selections' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto">
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}>
             <h2 className="text-3xl font-black italic uppercase mb-6">Estadísticas Selecciones</h2>
             <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
               {selectionStats.map((item) => (
@@ -549,7 +586,7 @@ export default function PaniniAlbum2026() {
                   setCurrentTeamIndex(teams.indexOf(team));
                   setCurrentView('album');
                 }}
-                className="bg-white rounded-2xl p-4 shadow font-black italic active:scale-95 transition flex items-center gap-2"
+                className={`rounded-2xl p-4 shadow font-black italic active:scale-95 transition-colors duration-300 flex items-center gap-2 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
               >
                 <span>{indexTeamIcons[team] || teamData[team]?.flag || '🏳️'}</span>
                 <span>{teamData[team]?.name || team}</span>
@@ -563,7 +600,7 @@ export default function PaniniAlbum2026() {
             <div className="hidden lg:flex justify-between items-center mb-8 gap-4">
               <button
                 onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
-                className="bg-white text-black rounded-full px-6 py-3 shadow font-bold italic"
+                className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] text-white border border-[#3a3a5a]' : 'bg-white text-black'}`}
               >
                 {currentTeam === 'FWCI1' ? 'HOME' : '← ANTERIOR'}
               </button>
@@ -581,12 +618,12 @@ export default function PaniniAlbum2026() {
                   </button>
                 </div>
 
-                <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : 'text-slate-500'}`}>
+                <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : darkMode ? 'text-slate-300' : 'text-slate-500'}`}>
                   {currentTeamInfo.federation}
                 </div>
 
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  <div className={`text-2xl font-black ${currentTeam === 'COCA' ? 'text-white' : 'text-blue-700'}`}>
+                  <div className={`text-2xl font-black ${currentTeam === 'COCA' ? 'text-white' : darkMode ? 'text-blue-400' : 'text-blue-700'}`}>
                     {currentTeamCompleted}/{stickerCount}
                   </div>
                 </div>
@@ -594,7 +631,7 @@ export default function PaniniAlbum2026() {
 
               <button
                 onClick={nextTeam}
-                className="bg-white text-black rounded-full px-6 py-3 shadow font-bold italic"
+                className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] text-white border border-[#3a3a5a]' : 'bg-white text-black'}`}
               >
                 {currentTeam === 'COCA' ? 'HOME' : 'SIGUIENTE →'}
               </button>
@@ -617,21 +654,21 @@ export default function PaniniAlbum2026() {
             </div>
 
             {currentTeam === 'FWCI1' && (
-              <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
+              <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam, darkMode)} p-3`}>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="col-span-2">
-                    <Sticker sticker={stickers[0]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                    <Sticker sticker={stickers[0]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                   </div>
                   <div className="col-span-2">
-                    <Sticker sticker={stickers[1]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                    <Sticker sticker={stickers[1]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                   </div>
                   <div className="col-span-2">
-                    <Sticker sticker={stickers[3]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                    <Sticker sticker={stickers[3]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                   </div>
                   <div className="col-span-2">
-                    <Sticker sticker={stickers[2]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                    <Sticker sticker={stickers[2]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                   </div>
-                  <Sticker sticker={stickers[4]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[4]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                 </div>
                 <div className="border-4 border-yellow-500 rounded-xl p-4 bg-gradient-to-br from-yellow-300 via-yellow-200 to-amber-100 text-black mt-3">
                   <div className="text-center font-black uppercase text-xs mb-2">Cuadro de Honor</div>
@@ -660,7 +697,7 @@ export default function PaniniAlbum2026() {
                     <div>Argentina 2022</div>
                   </div>
                 </div>
-                <div className="border-4 border-black rounded-xl p-4 bg-white mt-3">
+                <div className={`border-4 rounded-xl p-4 mt-3 transition-colors duration-300 ${darkMode ? 'border-[#3a3a5a] bg-[#1e1e30] text-white' : 'border-black bg-white'}`}>
                   <div className="font-black uppercase text-xs mb-2">Grupos del Mundial</div>
                   <div className="flex flex-col gap-1 text-[9px] font-black uppercase leading-tight">
                     <div>A: México • Sudafrica • Republica de Corea • Republica Checa</div>
@@ -681,20 +718,20 @@ export default function PaniniAlbum2026() {
             )}
 
             {currentTeam === 'FWCI2' && (
-              <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam)} p-3`}>
+              <div className={`lg:hidden overflow-hidden rounded-[2rem] border-4 border-slate-200 ${getInnerPanelClass(currentTeam, darkMode)} p-3`}>
                 <div className="grid grid-cols-4 gap-2">
-                  <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} />
-                  <Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} />
+                  <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                  <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                  <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                  <Sticker sticker={stickers[3]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                 </div>
               </div>
             )}
 
-            <div className={`overflow-hidden rounded-[2rem] border-4 border-slate-200 bg-white ${currentTeam.startsWith('FWCI') ? 'hidden lg:grid lg:grid-cols-2' : 'grid lg:grid-cols-2'}`}>
+            <div className={`overflow-hidden rounded-[2rem] border-4 transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-200 bg-white'} ${currentTeam.startsWith('FWCI') ? 'hidden lg:grid lg:grid-cols-2' : 'grid lg:grid-cols-2'}`}>
               {currentTeam.startsWith('FWCH') ? (
                 <>
-                  <div className="p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 bg-[#f7f5f2]">
+                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-300 bg-[#f7f5f2]'}`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       <div className="col-span-4 hidden lg:block">
                         <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-[#0d1b4d]">
@@ -713,7 +750,7 @@ export default function PaniniAlbum2026() {
                           return (
                             <div
                               key={`${currentTeam}-printed-left-${index}`}
-                              className="border-2 border-slate-300 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] bg-slate-200 text-slate-600"
+                              className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] transition-colors duration-300 ${darkMode ? 'border-slate-600 bg-[#2a2a4a] text-slate-400' : 'border-slate-300 bg-slate-200 text-slate-600'}`}
                             >
                               <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
                                 {item.label}
@@ -729,20 +766,21 @@ export default function PaniniAlbum2026() {
                             horizontal
                             currentTeam={currentTeam}
                             onToggle={toggleSticker}
+                            darkMode={darkMode}
                           />
                         );
                       })}
                     </div>
                   </div>
 
-                  <div className="p-3 sm:p-8 bg-[#faf8f5]">
+                  <div className={`p-3 sm:p-8 transition-colors duration-300 ${darkMode ? 'bg-[#252535]' : 'bg-[#faf8f5]'}`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       {historyPageItems[currentTeam].slice(Math.ceil(historyPageItems[currentTeam].length / 2)).map((item, index) => {
                         if (item.type === 'printed') {
                           return (
                             <div
                               key={`${currentTeam}-printed-right-${index}`}
-                              className="border-2 border-slate-300 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] bg-slate-200 text-slate-600"
+                              className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] transition-colors duration-300 ${darkMode ? 'border-slate-600 bg-[#2a2a4a] text-slate-400' : 'border-slate-300 bg-slate-200 text-slate-600'}`}
                             >
                               <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
                                 {item.label}
@@ -758,6 +796,7 @@ export default function PaniniAlbum2026() {
                             horizontal
                             currentTeam={currentTeam}
                             onToggle={toggleSticker}
+                            darkMode={darkMode}
                           />
                         );
                       })}
@@ -767,21 +806,21 @@ export default function PaniniAlbum2026() {
               ) : (
               <>
               {!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' && (
-                <div className={`lg:hidden p-3 ${getInnerPanelClass(currentTeam)}`}>
+                <div className={`lg:hidden p-3 ${getInnerPanelClass(currentTeam, darkMode)}`}>
                   <div className="grid grid-cols-4 gap-2">
                     {stickers.map((sticker) =>
                       sticker.id === 13 ? (
                         <div key={sticker.code} className="col-span-2">
-                          <Sticker sticker={sticker} horizontal currentTeam={currentTeam} onToggle={toggleSticker} />
+                          <Sticker sticker={sticker} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                         </div>
                       ) : (
-                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} />
+                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                       )
                     )}
                   </div>
                 </div>
               )}
-              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-300 ${getInnerPanelClass(currentTeam)} ${!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
+              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a]' : 'border-slate-300'} ${getInnerPanelClass(currentTeam, darkMode)} ${!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   <div className="col-span-2 hidden lg:block">
                     <div className={`text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
@@ -807,6 +846,7 @@ export default function PaniniAlbum2026() {
                           horizontal
                           currentTeam={currentTeam}
                           onToggle={toggleSticker}
+                          darkMode={darkMode}
                         />
                       </div>
 
@@ -847,6 +887,7 @@ export default function PaniniAlbum2026() {
                       sticker={sticker}
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
+                      darkMode={darkMode}
                     />
                   ))}
 
@@ -856,16 +897,17 @@ export default function PaniniAlbum2026() {
                       sticker={sticker}
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
+                      darkMode={darkMode}
                     />
                   ))}
                 </div>
               </div>
 
-              <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam)} ${!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
+              <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam, darkMode)} ${!currentTeam.startsWith('FWCI') && currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   {currentTeam === 'FWCI1' ? (
                     <>
-                      <div className="col-span-3 border-4 border-black rounded-xl p-4 min-h-[300px] bg-white">
+                      <div className={`col-span-3 border-4 rounded-xl p-4 min-h-[300px] transition-colors duration-300 ${darkMode ? 'border-[#3a3a5a] bg-[#1e1e30] text-white' : 'border-black bg-white'}`}>
                         <div className="font-black uppercase text-sm mb-3">
                           Grupos del Mundial
                         </div>
@@ -892,6 +934,7 @@ export default function PaniniAlbum2026() {
                           horizontal
                           currentTeam={currentTeam}
                           onToggle={toggleSticker}
+                          darkMode={darkMode}
                         />
 
                         <Sticker
@@ -899,6 +942,7 @@ export default function PaniniAlbum2026() {
                           horizontal
                           currentTeam={currentTeam}
                           onToggle={toggleSticker}
+                          darkMode={darkMode}
                         />
 
                         <Sticker
@@ -906,12 +950,14 @@ export default function PaniniAlbum2026() {
                           horizontal
                           currentTeam={currentTeam}
                           onToggle={toggleSticker}
+                          darkMode={darkMode}
                         />
 
                         <Sticker
                           sticker={stickers[4]}
                           currentTeam={currentTeam}
                           onToggle={toggleSticker}
+                          darkMode={darkMode}
                         />
                       </div>
                     </>
@@ -921,6 +967,7 @@ export default function PaniniAlbum2026() {
                       sticker={sticker}
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
+                      darkMode={darkMode}
                     />
                   ))}
 
@@ -931,6 +978,7 @@ export default function PaniniAlbum2026() {
                         horizontal
                         currentTeam={currentTeam}
                         onToggle={toggleSticker}
+                        darkMode={darkMode}
                       />
                     </div>
                   )}
@@ -941,12 +989,14 @@ export default function PaniniAlbum2026() {
                         sticker={stickers[2]}
                         currentTeam={currentTeam}
                         onToggle={toggleSticker}
+                        darkMode={darkMode}
                       />
 
                       <Sticker
                         sticker={stickers[3]}
                         currentTeam={currentTeam}
                         onToggle={toggleSticker}
+                        darkMode={darkMode}
                       />
                     </>
                   ) : currentTeam.startsWith('FWCI') ? null : stickers.slice(13).map((sticker) => (
@@ -955,6 +1005,7 @@ export default function PaniniAlbum2026() {
                       sticker={sticker}
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
+                      darkMode={darkMode}
                     />
                   ))}
                 </div>
@@ -967,23 +1018,23 @@ export default function PaniniAlbum2026() {
         )}
 
       {currentView === 'album' && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg">
+        <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white border-slate-200'}`}>
           <div className="flex">
             <button
               onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
-              className="flex-1 py-4 font-black italic text-sm border-r border-slate-200 active:bg-slate-100 transition-colors"
+              className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
             >
               {currentTeam === 'FWCI1' ? 'HOME' : '← ANTERIOR'}
             </button>
             <button
               onClick={() => setCurrentView('teams')}
-              className="flex-1 py-4 font-black uppercase text-sm border-r border-slate-200 active:bg-slate-100 transition-colors"
+              className={`flex-1 py-4 font-black uppercase text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
             >
               ÍNDICE
             </button>
             <button
               onClick={nextTeam}
-              className="flex-1 py-4 font-black italic text-sm active:bg-slate-100 transition-colors"
+              className={`flex-1 py-4 font-black italic text-sm active:bg-slate-100 transition-colors ${darkMode ? 'text-white' : ''}`}
             >
               {currentTeam === 'COCA' ? 'HOME' : 'SIGUIENTE →'}
             </button>
@@ -995,7 +1046,7 @@ export default function PaniniAlbum2026() {
 
       {showStats && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md">
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}>
             <h3 className="text-2xl font-black italic uppercase mb-6">Estadísticas</h3>
             <div className="space-y-3 font-black">
               <div>Figuritas completadas: {completedCount} / {TOTAL_STICKERS}</div>
@@ -1056,7 +1107,7 @@ export default function PaniniAlbum2026() {
 }
 
 
-function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
+function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode = false }) {
   const labels = {
     shield: 'Escudo',
     team: 'Foto Equipo'
@@ -1074,10 +1125,17 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
 
   const svgStyle = { position: 'absolute', top: '6%', left: '20%', width: '60%', opacity: 0.5, pointerEvents: 'none', zIndex: 0 };
 
+  const repeatedBg = darkMode ? 'bg-slate-300 border-slate-400' : 'bg-slate-500 border-slate-500';
+  const emptyBg = darkMode ? 'bg-[#2a2a4a] border-slate-600' : 'bg-white border-slate-300';
+  const completedBg = darkMode ? 'bg-green-900 border-green-500' : 'bg-green-100 border-green-500';
+
+  const repeatedCodeClass = darkMode ? 'text-slate-700 font-extrabold' : 'text-slate-100 font-extrabold';
+  const repeatedLabelClass = darkMode ? 'text-slate-800 font-extrabold' : 'text-slate-100';
+
   return (
     <button
       onClick={() => onToggle(sticker.code)}
-      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? 'bg-slate-500 border-slate-500' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? 'bg-green-100 border-green-500' : 'bg-white border-slate-300'} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? repeatedBg : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? completedBg : emptyBg} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
     >
       {isPlayerSticker && (
         <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={svgStyle}>
@@ -1091,11 +1149,11 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam }) {
         </svg>
       )}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? 'text-slate-100 font-extrabold' : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
+        <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? repeatedCodeClass : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
           {sticker.code}
         </div>
 
-        <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed || sticker.repeated ? 'font-extrabold' : 'font-black'} ${sticker.repeated ? 'text-slate-100' : currentTeam === 'COCA' || currentTeam.startsWith('FWCH') ? 'text-black' : ''}`}>
+        <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed || sticker.repeated ? 'font-extrabold' : 'font-black'} ${sticker.repeated ? repeatedLabelClass : currentTeam === 'COCA' || currentTeam.startsWith('FWCH') ? 'text-black' : ''}`}>
           {sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`}
         </div>
       </div>
