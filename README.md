@@ -39,13 +39,13 @@ Sin pegar → Pegada → Repetida → Sin pegar → ...
 
 ### Silueta en figuritas de jugador
 
-Cada tarjeta de jugador muestra una silueta decorativa tipo carnet (cabeza + hombros) en el tercio superior. La silueta adapta su color al estado de la figurita:
+Cada tarjeta de jugador muestra una silueta decorativa tipo carnet (cabeza + hombros) en el tercio superior, y cada tarjeta de escudo muestra una forma de escudo heráldico. El decorado adapta su color al estado de la figurita:
 
-- **Sin pegar** — silueta gris claro.
-- **Pegada** — silueta verde claro.
-- **Repetida** — silueta gris medio.
+- **Sin pegar** — gris medio (slate-300).
+- **Pegada** — verde (green-400).
+- **Repetida** — gris oscuro (slate-400).
 
-La silueta es un elemento decorativo de fondo; no aparece en escudos, fotos de equipo ni figuritas especiales (FWC, historia del mundial, Coca-Cola).
+Son elementos de fondo; las letras siempre quedan por encima. No aparecen en fotos de equipo ni figuritas especiales (FWC, historia del mundial, Coca-Cola).
 
 ### Figuritas brillantes
 
