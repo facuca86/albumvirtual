@@ -117,6 +117,8 @@ const getInnerPanelClass = (teamCode, darkMode = false) => {
   return darkMode ? 'bg-[#1e1e30]' : 'bg-[#f7f5f2]';
 };
 
+const isTeamDark = (teamCode) => teamThemes[getThemeKey(teamCode)]?.dark === true;
+
 export default function PaniniAlbum2026() {
   if (VIEW_PARAM === 'repetidas') return <RepeatidasView />;
   const [currentView, setCurrentView] = useState('home');
@@ -607,7 +609,7 @@ export default function PaniniAlbum2026() {
 
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 flex-wrap">
-                  <h2 className="text-3xl sm:text-5xl font-black italic uppercase break-words">
+                  <h2 className={`text-3xl sm:text-5xl font-black italic uppercase break-words ${isTeamDark(currentTeam) ? 'text-white drop-shadow-lg' : 'text-slate-800'}`}>
                     {currentTeamInfo.name}
                   </h2>
                   <button
@@ -618,12 +620,12 @@ export default function PaniniAlbum2026() {
                   </button>
                 </div>
 
-                <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : darkMode ? 'text-slate-300' : 'text-slate-500'}`}>
+                <div className={`mt-2 text-sm uppercase tracking-[0.25em] ${currentTeam === 'COCA' ? 'text-red-100' : isTeamDark(currentTeam) ? 'text-white/80' : 'text-slate-500'}`}>
                   {currentTeamInfo.federation}
                 </div>
 
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  <div className={`text-2xl font-black ${currentTeam === 'COCA' ? 'text-white' : darkMode ? 'text-blue-400' : 'text-blue-700'}`}>
+                  <div className={`text-2xl font-black ${currentTeam === 'COCA' ? 'text-white' : isTeamDark(currentTeam) ? 'text-white' : 'text-blue-700'}`}>
                     {currentTeamCompleted}/{stickerCount}
                   </div>
                 </div>
