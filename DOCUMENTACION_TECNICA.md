@@ -180,16 +180,18 @@ Esta vista es **pública y de solo lectura**: cualquier persona con el link (o e
 | Elemento | Detalle |
 |---|---|
 | `isPlayerSticker` | Booleano local: `sticker.type === 'player'` + exclusión explícita de códigos `FWC*`, `CC*` y `PANINI`. Necesario porque esos tipos especiales usan el valor por defecto `'player'` para `type` y habrían mostrado la silueta incorrectamente. |
-| `silhouetteColor` | Color hexadecimal del SVG según estado: `#e2e8f0` (slate-200, vacía) / `#bbf7d0` (green-200, pegada) / `#94a3b8` (slate-400, repetida). |
-| SVG inline | `viewBox="0 0 100 120"` con un `<circle cx="50" cy="35" r="22">` (cabeza) y un `<path>` de curvas cúbicas (hombros/busto). Posición absoluta centrada en el tercio superior de la tarjeta (`top: 6%`, `left: 20%`, `width: 60%`). Opacidad `0.45`. `pointerEvents: none`. `aria-hidden="true"`. |
-| `relative` en `<button>` | Se agregó la clase `relative` al botón para que el SVG posicionado absolutamente quede contenido dentro de la tarjeta. |
+| `decorColor` | Color hexadecimal del SVG según estado: `#cbd5e1` (slate-300, vacía) / `#4ade80` (green-400, pegada) / `#94a3b8` (slate-400, repetida). |
+| SVG jugador | `viewBox="0 0 100 120"` con `<circle cx="50" cy="35" r="22">` (cabeza) y `<path>` de curvas cúbicas (hombros/busto). Posición absoluta (`top: 6%`, `left: 20%`, `width: 60%`). Opacidad `0.5`. `zIndex: 0`. `pointerEvents: none`. `aria-hidden="true"`. |
+| SVG escudo | `viewBox="0 0 100 120"` con `<path d="M 10 10 L 90 10 L 90 65 Q 90 105 50 118 Q 10 105 10 65 Z">` (forma heráldica). Mismos estilos de posición y opacidad que el SVG de jugador. Solo aparece cuando `sticker.type === 'shield'`. |
+| `relative` en `<button>` | Clase `relative` en el botón; el SVG usa `zIndex: 0` y el div de texto usa `zIndex: 1` para garantizar que las letras siempre queden por encima del decorado. |
 
 #### Comportamiento
 
-- La silueta aparece **solo** en figuritas de tipo `player` de selecciones nacionales (ej. `ARG2`, `MEX5`).
-- No aparece en: escudos (`type === 'shield'`), fotos de equipo (`type === 'team'`), ni en figuritas especiales FWC, FWCH, COCA.
-- El color de la silueta acompaña el estado de la figurita: gris claro (sin pegar), verde claro (pegada), gris medio (repetida).
-- El SVG es un elemento decorativo de fondo; no afecta clicks ni legibilidad del código/nombre.
+- La silueta de jugador aparece **solo** en figuritas de tipo `player` de selecciones nacionales (ej. `ARG2`, `MEX5`).
+- El escudo SVG aparece **solo** en figuritas `type === 'shield'` (posición 1 de cada selección).
+- No aparece nada en: fotos de equipo (`type === 'team'`), ni en figuritas especiales FWC, FWCH, COCA.
+- El color del decorado acompaña el estado: gris medio (sin pegar), verde (pegada), gris oscuro (repetida).
+- El SVG tiene `zIndex: 0` y el texto `zIndex: 1`; las letras siempre quedan visibles por encima.
 
 #### Lo que no se modificó
 
