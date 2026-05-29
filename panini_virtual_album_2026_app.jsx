@@ -997,30 +997,30 @@ export default function PaniniAlbum2026() {
                       darkMode={darkMode}
                     />
                   ))}
-                </div>
 
-                {teamGroups[currentTeam] && (
-                  <div className="mt-2 border-2 border-slate-300 rounded-2xl p-3 bg-white/60">
-                    <div className="font-black uppercase text-xs text-slate-500 mb-2 tracking-widest">
-                      GRUPO {teamGroups[currentTeam].group}
+                  {teamGroups[currentTeam] && (
+                    <div className="border-2 border-slate-300 rounded-2xl p-2 bg-white/60 h-full flex flex-col justify-center">
+                      <div className="font-black uppercase text-[9px] text-slate-500 mb-1 tracking-widest">
+                        GRUPO {teamGroups[currentTeam].group}
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        {teamGroups[currentTeam].members.map((member, i) => {
+                          const isCurrent = member === teamData[currentTeam]?.name;
+                          return (
+                            <div
+                              key={i}
+                              className={`text-[9px] font-black uppercase leading-tight px-1.5 py-0.5 rounded ${
+                                isCurrent ? 'bg-slate-800 text-white' : 'text-slate-700'
+                              }`}
+                            >
+                              {member}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      {teamGroups[currentTeam].members.map((member, i) => {
-                        const isCurrent = member === teamData[currentTeam]?.name;
-                        return (
-                          <div
-                            key={i}
-                            className={`text-xs font-black uppercase leading-tight px-2 py-1 rounded-lg ${
-                              isCurrent ? 'bg-slate-800 text-white' : 'text-slate-700'
-                            }`}
-                          >
-                            {member}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
               </>
               )}
