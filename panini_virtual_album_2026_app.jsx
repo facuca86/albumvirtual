@@ -84,6 +84,21 @@ const teamData = {
   USA: { name: 'Estados Unidos', federation: 'U.S. Soccer Federation', flag: '🇺🇸' }
 };
 
+const groups = {
+  A: { color: '#73BB6A', teams: ['MEX','RSA','KOR','CZE'] },
+  B: { color: '#E30613', teams: ['CAN','BIH','QAT','SUI'] },
+  C: { color: '#B8D94A', teams: ['BRA','MAR','HAI','SCO'] },
+  D: { color: '#0A4E97', teams: ['USA','PAR','AUS','TUR'] },
+  E: { color: '#E55C0B', teams: ['GER','CUW','CIV','ECU'] },
+  F: { color: '#006B63', teams: ['NED','JPN','SWE','TUN'] },
+  G: { color: '#CACBDD', teams: ['BEL','EGY','IRN','NZL'] },
+  H: { color: '#5CC9CA', teams: ['ESP','CPV','KSA','URU'] },
+  I: { color: '#5B2E87', teams: ['FRA','SEN','IRQ','NOR'] },
+  J: { color: '#EDD6D6', teams: ['ARG','ALG','AUT','JOR'] },
+  K: { color: '#E4326C', teams: ['POR','COD','UZB','COL'] },
+  L: { color: '#7A121A', teams: ['ENG','CRO','GHA','PAN'] },
+};
+
 const indexTeamIcons = {
   FWCI1: '⚽',
   FWCI2: '⚽',
@@ -508,10 +523,7 @@ export default function PaniniAlbum2026() {
         {currentView === 'home' && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <button
-              onClick={() => {
-                setCurrentTeamIndex(0);
-                setCurrentView('album');
-              }}
+              onClick={() => setCurrentView('groups')}
               className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
@@ -576,6 +588,97 @@ export default function PaniniAlbum2026() {
                 <span>{teamData[team]?.name || team}</span>
               </button>
             ))}
+          </div>
+        )}
+
+        {currentView === 'groups' && (
+          <div
+            className="rounded-3xl p-4 sm:p-8 pb-24 sm:pb-8 shadow-xl"
+            style={{ background: 'radial-gradient(ellipse at center, #C92A7A, #A11C5B, #FF5A00, #B18BEA, #5D93E6, #8FC8FF, #E9F52A, #006B4F)' }}
+          >
+            {/* Desktop nav */}
+            <div className="hidden lg:flex justify-between items-center mb-6">
+              <button
+                onClick={() => setCurrentView('home')}
+                className="rounded-full px-6 py-3 shadow font-bold italic bg-white text-black"
+              >
+                HOME
+              </button>
+              <h2 className="text-3xl font-black italic uppercase text-white drop-shadow-lg">GRUPOS</h2>
+              <button
+                onClick={() => { setCurrentTeamIndex(0); setCurrentView('album'); }}
+                className="rounded-full px-6 py-3 shadow font-bold italic bg-white text-black"
+              >
+                SIGUIENTE →
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* INTRO button */}
+              <button
+                onClick={() => { setCurrentTeamIndex(0); setCurrentView('album'); }}
+                className="col-span-2 rounded-2xl p-4 font-black text-2xl sm:text-3xl active:scale-95 transition-transform"
+                style={{ backgroundColor: '#FFD700', color: '#E30613' }}
+              >
+                INTRO
+              </button>
+
+              {/* Group buttons */}
+              {Object.entries(groups).map(([letter, group]) => {
+                const isLightGroup = letter === 'G' || letter === 'J';
+                const textColor = isLightGroup ? '#1a1a1a' : '#ffffff';
+                return (
+                  <button
+                    key={letter}
+                    onClick={() => {
+                      setCurrentTeamIndex(teams.indexOf(group.teams[0]));
+                      setCurrentView('album');
+                    }}
+                    className="rounded-2xl p-3 sm:p-4 font-black active:scale-95 transition-transform text-left flex gap-3 items-start"
+                    style={{ backgroundColor: group.color, color: textColor }}
+                  >
+                    <span className="text-3xl sm:text-4xl font-black leading-none shrink-0">{letter}</span>
+                    <div className="flex flex-col gap-0.5 text-xs sm:text-sm leading-tight">
+                      {group.teams.map((team) => (
+                        <span key={team}>{teamData[team]?.flag || '🏳️'} {teamData[team]?.name || team}</span>
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* CAMPEONES button */}
+              <button
+                onClick={() => {
+                  setCurrentTeamIndex(teams.indexOf('FWCH1'));
+                  setCurrentView('album');
+                }}
+                className="col-span-2 rounded-2xl p-4 font-black text-2xl sm:text-3xl active:scale-95 transition-transform"
+                style={{ backgroundColor: '#0A4E97', color: '#FFD700' }}
+              >
+                CAMPEONES
+              </button>
+            </div>
+          </div>
+        )}
+
+        {currentView === 'groups' && (
+          <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white border-slate-200'}`}>
+            <div className="flex">
+              <button
+                onClick={() => setCurrentView('home')}
+                className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
+              >
+                HOME
+              </button>
+              <div className={`flex-1 border-r ${darkMode ? 'border-[#2a2a4a]' : 'border-slate-200'}`} />
+              <button
+                onClick={() => { setCurrentTeamIndex(0); setCurrentView('album'); }}
+                className={`flex-1 py-4 font-black italic text-sm active:bg-slate-100 transition-colors ${darkMode ? 'text-white' : ''}`}
+              >
+                SIGUIENTE →
+              </button>
+            </div>
           </div>
         )}
 
