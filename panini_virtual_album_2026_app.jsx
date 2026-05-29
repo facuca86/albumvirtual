@@ -740,7 +740,7 @@ export default function PaniniAlbum2026() {
               </div>
             </div>
 
-            <div className={`overflow-hidden rounded-[2rem] border-4 transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-200 bg-white'} ${currentTeam === 'FWCI1' ? 'grid grid-cols-1' : 'grid lg:grid-cols-2'}`}>
+            <div className={`overflow-hidden rounded-[2rem] border-4 transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-200 bg-white'} grid lg:grid-cols-2`}>
               {currentTeam.startsWith('FWCH') ? (
                 <>
                   <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-300 bg-[#0d2167]'}`}>
@@ -816,20 +816,46 @@ export default function PaniniAlbum2026() {
                   </div>
                 </>
               ) : currentTeam === 'FWCI1' ? (
-                <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam, darkMode)}`}>
-                  <div className="grid grid-cols-4 gap-2 sm:gap-4">
-                    <div className="col-span-2">
-                      <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                <>
+                  {/* Mobile: todos los stickers en columna única */}
+                  <div className={`lg:hidden p-3 ${getInnerPanelClass(currentTeam, darkMode)}`}>
+                    <div className="grid grid-cols-4 gap-2">
+                      {stickers.map((sticker) => (
+                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                      ))}
                     </div>
-                    <div className="col-span-2 flex flex-col gap-2">
-                      <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                      <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                    </div>
-                    {stickers.slice(3, 9).map((sticker) => (
-                      <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                    ))}
                   </div>
-                </div>
+                  {/* Panel izquierdo - desktop */}
+                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a]' : 'border-slate-300'} ${getInnerPanelClass(currentTeam, darkMode)} hidden lg:block`}>
+                    <div className="grid grid-cols-4 gap-2 sm:gap-4">
+                      <div className="col-span-2">
+                        <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-white">
+                          {currentTeamInfo.name}
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-4 text-center sm:text-left">
+                          <div className="text-5xl sm:text-6xl">{currentTeamInfo.flag}</div>
+                          <div className="font-black uppercase text-[10px] sm:text-sm leading-tight text-white">
+                            {currentTeamInfo.federation}
+                          </div>
+                        </div>
+                      </div>
+                      {stickers.slice(0, 2).map((sticker) => (
+                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                      ))}
+                      {stickers.slice(2, 6).map((sticker) => (
+                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Panel derecho - desktop */}
+                  <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam, darkMode)} hidden lg:block`}>
+                    <div className="grid grid-cols-4 gap-2 sm:gap-4">
+                      {stickers.slice(6, 9).map((sticker) => (
+                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                      ))}
+                    </div>
+                  </div>
+                </>
               ) : (
               <>
               {currentTeam !== 'COCA' && (
