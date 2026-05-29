@@ -949,7 +949,7 @@ export default function PaniniAlbum2026() {
                                   key={i}
                                   className={`text-[9px] font-black uppercase leading-tight px-1.5 py-0.5 rounded flex items-center gap-1 ${
                                     isCurrent
-                                      ? 'bg-white text-slate-800'
+                                      ? darkMode ? 'bg-white text-slate-800' : 'bg-black text-white'
                                       : darkMode ? 'text-slate-300' : 'text-slate-700'
                                   }`}
                                 >
