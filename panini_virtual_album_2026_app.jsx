@@ -1004,7 +1004,13 @@ export default function PaniniAlbum2026() {
                     const currentIdxInGroup = grpTeams.indexOf(currentTeam);
                     const grpColor = groups[grpKey]?.color || '#475569';
                     return (
-                      <div className="border-2 border-slate-300 rounded-2xl p-2 bg-white/60 h-full flex flex-col justify-center">
+                      <div
+                        className="border-2 rounded-2xl p-2 h-full flex flex-col justify-center"
+                        style={darkMode
+                          ? { backgroundColor: '#2a2a4a', borderColor: '#475569' }
+                          : { backgroundColor: 'rgba(255,255,255,0.6)', borderColor: '#cbd5e1' }
+                        }
+                      >
                         <div
                           className="font-black uppercase text-[11px] mb-1.5 tracking-widest text-center"
                           style={{ color: grpColor }}
@@ -1019,7 +1025,9 @@ export default function PaniniAlbum2026() {
                               <div
                                 key={i}
                                 className={`text-[9px] font-black uppercase leading-tight px-1.5 py-0.5 rounded flex items-center gap-1 ${
-                                  isCurrent ? 'bg-slate-800 text-white' : 'text-slate-700'
+                                  isCurrent
+                                    ? 'bg-white text-slate-800'
+                                    : darkMode ? 'text-slate-300' : 'text-slate-700'
                                 }`}
                               >
                                 <span>{flag}</span>
