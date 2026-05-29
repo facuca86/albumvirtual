@@ -821,10 +821,8 @@ export default function PaniniAlbum2026() {
                     <div className="col-span-2">
                       <Sticker sticker={stickers[0]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                     </div>
-                    <div className="col-span-2 flex flex-col gap-2 sm:gap-4">
-                      <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                      <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                    </div>
+                    <Sticker sticker={stickers[1]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                    <Sticker sticker={stickers[2]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                     {stickers.slice(3, 7).map((sticker) => (
                       <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                     ))}
