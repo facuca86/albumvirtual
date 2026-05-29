@@ -84,6 +84,57 @@ const teamData = {
   USA: { name: 'Estados Unidos', federation: 'U.S. Soccer Federation', flag: '🇺🇸' }
 };
 
+const teamGroups = {
+  MEX: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  RSA: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  KOR: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  CZE: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  CAN: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  BIH: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  QAT: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  SUI: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  BRA: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  MAR: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  HAI: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  SCO: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  USA: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  PAR: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  AUS: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  TUR: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  GER: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  CUW: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  CIV: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  ECU: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  NED: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  JPN: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  SWE: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  TUN: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  BEL: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  EGY: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  IRN: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  NZL: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  ESP: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  CPV: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  KSA: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  URU: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  FRA: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  SEN: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  IRQ: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  NOR: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  ARG: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  ALG: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  AUT: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  JOR: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  POR: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  COD: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  UZB: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  COL: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  ENG: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+  CRO: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+  GHA: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+  PAN: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+};
+
 const groups = {
   A: { color: '#73BB6A', teams: ['MEX','RSA','KOR','CZE'] },
   B: { color: '#E30613', teams: ['CAN','BIH','QAT','SUI'] },
@@ -946,6 +997,48 @@ export default function PaniniAlbum2026() {
                       darkMode={darkMode}
                     />
                   ))}
+
+                  {teamGroups[currentTeam] && (() => {
+                    const grpKey = teamGroups[currentTeam].group;
+                    const grpTeams = groups[grpKey]?.teams || [];
+                    const currentIdxInGroup = grpTeams.indexOf(currentTeam);
+                    const grpColor = groups[grpKey]?.color || '#475569';
+                    return (
+                      <div
+                        className="border-2 rounded-2xl p-2 h-full flex flex-col justify-center"
+                        style={darkMode
+                          ? { backgroundColor: '#2a2a4a', borderColor: '#475569' }
+                          : { backgroundColor: 'rgba(255,255,255,0.6)', borderColor: '#cbd5e1' }
+                        }
+                      >
+                        <div
+                          className="font-black uppercase text-[11px] mb-1.5 tracking-widest text-center"
+                          style={{ color: darkMode ? '#e2e8f0' : grpColor }}
+                        >
+                          GRUPO {grpKey}
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          {teamGroups[currentTeam].members.map((member, i) => {
+                            const isCurrent = i === currentIdxInGroup;
+                            const flag = teamData[grpTeams[i]]?.flag || '';
+                            return (
+                              <div
+                                key={i}
+                                className={`text-[9px] font-black uppercase leading-tight px-1.5 py-0.5 rounded flex items-center gap-1 ${
+                                  isCurrent
+                                    ? 'bg-white text-slate-800'
+                                    : darkMode ? 'text-slate-300' : 'text-slate-700'
+                                }`}
+                              >
+                                <span>{flag}</span>
+                                <span>{member}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
               </>
