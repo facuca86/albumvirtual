@@ -634,11 +634,11 @@ export default function PaniniAlbum2026() {
                       setCurrentTeamIndex(teams.indexOf(group.teams[0]));
                       setCurrentView('album');
                     }}
-                    className="rounded-2xl p-3 sm:p-4 font-black active:scale-95 transition-transform text-left flex gap-3 items-start"
+                    className="rounded-2xl py-2 px-3 font-black active:scale-95 transition-transform text-left flex gap-2 items-center"
                     style={{ backgroundColor: group.color, color: textColor }}
                   >
-                    <span className="text-3xl sm:text-4xl font-black leading-none shrink-0">{letter}</span>
-                    <div className="flex flex-col gap-0.5 text-xs sm:text-sm leading-tight">
+                    <span className="text-2xl sm:text-3xl font-black leading-none shrink-0">{letter}</span>
+                    <div className="flex flex-col gap-0.5 text-sm leading-tight min-w-0">
                       {group.teams.map((team) => (
                         <span key={team}>{teamData[team]?.flag || '🏳️'} {teamData[team]?.name || team}</span>
                       ))}
@@ -686,10 +686,10 @@ export default function PaniniAlbum2026() {
           <div className={`rounded-3xl px-4 pt-4 pb-24 sm:px-8 sm:pt-8 sm:pb-8 shadow-xl ${getTeamGradientClass(currentTeam)}`}>
             <div className="hidden lg:flex justify-between items-center mb-8 gap-4">
               <button
-                onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
+                onClick={() => currentTeam === 'FWCI1' ? setCurrentView('groups') : prevTeam()}
                 className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] text-white border border-[#3a3a5a]' : 'bg-white text-black'}`}
               >
-                {currentTeam === 'FWCI1' ? 'HOME' : '← ANTERIOR'}
+                ← ANTERIOR
               </button>
 
               <div className="text-center">
@@ -936,10 +936,10 @@ export default function PaniniAlbum2026() {
         <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white border-slate-200'}`}>
           <div className="flex">
             <button
-              onClick={() => currentTeam === 'FWCI1' ? setCurrentView('home') : prevTeam()}
+              onClick={() => currentTeam === 'FWCI1' ? setCurrentView('groups') : prevTeam()}
               className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
             >
-              {currentTeam === 'FWCI1' ? 'HOME' : '← ANTERIOR'}
+              ← ANTERIOR
             </button>
             <button
               onClick={() => setCurrentView('teams')}
