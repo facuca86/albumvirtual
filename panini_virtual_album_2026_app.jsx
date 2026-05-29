@@ -271,7 +271,7 @@ export default function PaniniAlbum2026() {
 
       if (currentTeam === 'FWCI1') {
         const fwciDefs = [
-          { code: 'PANINI', label: '00', type: 'panini' },
+          { code: 'PANINI', label: '00', type: 'panini', displayCode: '00', displayLabel: 'PANINI' },
           { code: 'FWC1', label: 'Logo Copa 1', type: 'fwc' },
           { code: 'FWC2', label: 'Logo Copa 2', type: 'fwc' },
           { code: 'FWC3', label: 'Mascotas', type: 'fwc' },
@@ -819,14 +819,13 @@ export default function PaniniAlbum2026() {
                 <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam, darkMode)}`}>
                   <div className="grid grid-cols-4 gap-2 sm:gap-4">
                     <div className="col-span-2">
-                      <Sticker sticker={stickers[0]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                      <Sticker sticker={stickers[0]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                     </div>
-                    <Sticker sticker={stickers[1]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                    <Sticker sticker={stickers[2]} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                    {stickers.slice(3, 7).map((sticker) => (
-                      <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
-                    ))}
-                    {stickers.slice(7, 9).map((sticker) => (
+                    <div className="col-span-2 flex flex-col gap-2">
+                      <Sticker sticker={stickers[1]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                      <Sticker sticker={stickers[2]} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                    </div>
+                    {stickers.slice(3, 9).map((sticker) => (
                       <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
                     ))}
                   </div>
@@ -1069,11 +1068,11 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
       )}
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? repeatedCodeClass : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
-          {sticker.code}
+          {sticker.displayCode || sticker.code}
         </div>
 
         <div className={`italic uppercase text-[10px] sm:text-sm mt-1 leading-tight ${sticker.completed || sticker.repeated ? 'font-extrabold' : 'font-black'} ${sticker.repeated ? repeatedLabelClass : currentTeam === 'COCA' || currentTeam.startsWith('FWCH') ? 'text-black' : ''}`}>
-          {sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`}
+          {sticker.displayLabel || sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`}
         </div>
       </div>
     </button>
