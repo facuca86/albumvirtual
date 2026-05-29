@@ -1013,7 +1013,7 @@ export default function PaniniAlbum2026() {
                       >
                         <div
                           className="font-black uppercase text-[11px] mb-1.5 tracking-widest text-center"
-                          style={{ color: grpColor }}
+                          style={{ color: darkMode ? '#e2e8f0' : grpColor }}
                         >
                           GRUPO {grpKey}
                         </div>
