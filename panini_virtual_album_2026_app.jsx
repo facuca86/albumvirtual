@@ -261,7 +261,7 @@ export default function PaniniAlbum2026() {
         ? `CC${id}`
         : currentTeam.startsWith('FWCI')
         ? id === 1
-          ? 'PANINI'
+          ? '00'
           : `FWC${id - 1}`
         : `${currentTeam}${id}`;
 
@@ -271,7 +271,7 @@ export default function PaniniAlbum2026() {
 
       if (currentTeam === 'FWCI1') {
         const fwciDefs = [
-          { code: 'PANINI', label: '00', type: 'panini', displayCode: '00', displayLabel: 'PANINI' },
+          { code: '00', label: 'PANINI', type: 'panini', displayCode: '00', displayLabel: 'PANINI' },
           { code: 'FWC1', label: 'Logo Copa 1', type: 'fwc' },
           { code: 'FWC2', label: 'Logo Copa 2', type: 'fwc' },
           { code: 'FWC3', label: 'Mascotas', type: 'fwc' },
@@ -422,14 +422,14 @@ export default function PaniniAlbum2026() {
   const selectionTeams = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA');
 
   const selectionStats = useMemo(() => {
-    const paniniCodes = ['PANINI'];
+    const paniniCodes = ['00'];
     const fwcIntroCodes = Array.from({ length: 8 }, (_, i) => `FWC${i + 1}`);
     const fwcHistoryCodes = Array.from({ length: STICKERS_FWCH }, (_, i) => `FWC${i + 9}`);
     const cocaCodes = Array.from({ length: STICKERS_COCA }, (_, i) => `CC${i + 1}`);
 
     return [
       {
-        key: 'PANINI',
+        key: '00',
         emoji: '⚽',
         name: 'PANINI',
         total: paniniCodes.length,
@@ -470,7 +470,7 @@ export default function PaniniAlbum2026() {
   }, [completed, selectionTeams]);
 
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
-    ? ['PANINI','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
+    ? ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => isCompletedSticker(completed[code])).length
     : currentTeam.startsWith('FWCH')
     ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19','FWC20']
@@ -1028,7 +1028,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
   const isPlayerSticker = sticker.type === 'player'
     && !sticker.code.startsWith('FWC')
     && !sticker.code.startsWith('CC')
-    && sticker.code !== 'PANINI';
+    && sticker.code !== '00';
 
   const isShieldSticker = sticker.type === 'shield';
 
@@ -1044,7 +1044,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
   const repeatedCodeClass = darkMode ? 'text-slate-700 font-extrabold' : 'text-slate-100 font-extrabold';
   const repeatedLabelClass = darkMode ? 'text-slate-800 font-extrabold' : 'text-slate-100';
 
-  const paniniStyle = sticker.code === 'PANINI' && !sticker.repeated ? {
+  const paniniStyle = sticker.code === '00' && !sticker.repeated ? {
     background: 'linear-gradient(135deg, #c0c0c0, #f8f8f8, #a8a8a8, #e8e8e8, #c0c0c0)',
     borderColor: '#a0a0a0'
   } : undefined;
@@ -1053,7 +1053,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
     <button
       onClick={() => onToggle(sticker.code)}
       style={paniniStyle}
-      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? repeatedBg : sticker.code === 'PANINI' ? '' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? completedBg : emptyBg} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? repeatedBg : sticker.code === '00' ? '' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? completedBg : emptyBg} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
     >
       {isPlayerSticker && (
         <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={svgStyle}>
@@ -1080,7 +1080,7 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
 }
 
 const FWC_LABELS = {
-  PANINI: '00', FWC1: 'Logo Copa 1', FWC2: 'Logo Copa 2', FWC3: 'Mascotas',
+  '00': 'PANINI', FWC1: 'Logo Copa 1', FWC2: 'Logo Copa 2', FWC3: 'Mascotas',
   FWC4: 'Póster', FWC5: 'Balón Oficial', FWC6: 'Póster Canadá',
   FWC7: 'Póster México', FWC8: 'Póster USA',
   FWC9: 'ITALIA 1934', FWC10: 'URUGUAY 1950', FWC11: 'RF ALEMANIA 1954',
@@ -1090,7 +1090,7 @@ const FWC_LABELS = {
 };
 
 function getTeamForCode(code) {
-  if (code === 'PANINI') return 'FWCI1';
+  if (code === '00') return 'FWCI1';
   const fwcMatch = code.match(/^FWC(\d+)$/);
   if (fwcMatch) {
     const n = parseInt(fwcMatch[1]);
@@ -1104,7 +1104,7 @@ function getTeamForCode(code) {
 }
 
 function getPlayerNameForCode(code, team) {
-  if (code === 'PANINI' || code.match(/^FWC\d+$/)) return FWC_LABELS[code] || code;
+  if (code === '00' || code.match(/^FWC\d+$/)) return FWC_LABELS[code] || code;
   if (team === 'COCA') {
     const m = code.match(/^CC(\d+)$/);
     return m ? (playerNames.CC?.[parseInt(m[1])] || code) : code;
