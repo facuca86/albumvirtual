@@ -998,28 +998,39 @@ export default function PaniniAlbum2026() {
                     />
                   ))}
 
-                  {teamGroups[currentTeam] && (
-                    <div className="border-2 border-slate-300 rounded-2xl p-2 bg-white/60 h-full flex flex-col justify-center">
-                      <div className="font-black uppercase text-[9px] text-slate-500 mb-1 tracking-widest">
-                        GRUPO {teamGroups[currentTeam].group}
+                  {teamGroups[currentTeam] && (() => {
+                    const grpKey = teamGroups[currentTeam].group;
+                    const grpTeams = groups[grpKey]?.teams || [];
+                    const currentIdxInGroup = grpTeams.indexOf(currentTeam);
+                    const grpColor = groups[grpKey]?.color || '#475569';
+                    return (
+                      <div className="border-2 border-slate-300 rounded-2xl p-2 bg-white/60 h-full flex flex-col justify-center">
+                        <div
+                          className="font-black uppercase text-[11px] mb-1.5 tracking-widest text-center"
+                          style={{ color: grpColor }}
+                        >
+                          GRUPO {grpKey}
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          {teamGroups[currentTeam].members.map((member, i) => {
+                            const isCurrent = i === currentIdxInGroup;
+                            const flag = teamData[grpTeams[i]]?.flag || '';
+                            return (
+                              <div
+                                key={i}
+                                className={`text-[9px] font-black uppercase leading-tight px-1.5 py-0.5 rounded flex items-center gap-1 ${
+                                  isCurrent ? 'bg-slate-800 text-white' : 'text-slate-700'
+                                }`}
+                              >
+                                <span>{flag}</span>
+                                <span>{member}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-0.5">
-                        {teamGroups[currentTeam].members.map((member, i) => {
-                          const isCurrent = member === teamData[currentTeam]?.name;
-                          return (
-                            <div
-                              key={i}
-                              className={`text-[9px] font-black uppercase leading-tight px-1.5 py-0.5 rounded ${
-                                isCurrent ? 'bg-slate-800 text-white' : 'text-slate-700'
-                              }`}
-                            >
-                              {member}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
               </>
