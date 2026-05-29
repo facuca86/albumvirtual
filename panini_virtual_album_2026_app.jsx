@@ -84,6 +84,57 @@ const teamData = {
   USA: { name: 'Estados Unidos', federation: 'U.S. Soccer Federation', flag: '🇺🇸' }
 };
 
+const teamGroups = {
+  MEX: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  RSA: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  KOR: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  CZE: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
+  CAN: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  BIH: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  QAT: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  SUI: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
+  BRA: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  MAR: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  HAI: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  SCO: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
+  USA: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  PAR: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  AUS: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  TUR: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
+  GER: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  CUW: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  CIV: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  ECU: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
+  NED: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  JPN: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  SWE: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  TUN: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
+  BEL: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  EGY: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  IRN: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  NZL: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
+  ESP: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  CPV: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  KSA: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  URU: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
+  FRA: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  SEN: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  IRQ: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  NOR: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
+  ARG: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  ALG: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  AUT: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  JOR: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
+  POR: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  COD: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  UZB: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  COL: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
+  ENG: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+  CRO: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+  GHA: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+  PAN: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
+};
+
 const groups = {
   A: { color: '#73BB6A', teams: ['MEX','RSA','KOR','CZE'] },
   B: { color: '#E30613', teams: ['CAN','BIH','QAT','SUI'] },
@@ -946,6 +997,29 @@ export default function PaniniAlbum2026() {
                       darkMode={darkMode}
                     />
                   ))}
+
+                  {teamGroups[currentTeam] && (
+                    <div className="col-span-4 mt-2 border-2 border-slate-300 rounded-2xl p-3 bg-white/60">
+                      <div className="font-black uppercase text-xs text-slate-500 mb-2 tracking-widest">
+                        GRUPO {teamGroups[currentTeam].group}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {teamGroups[currentTeam].members.map((member, i) => {
+                          const isCurrent = member === teamData[currentTeam]?.name;
+                          return (
+                            <div
+                              key={i}
+                              className={`text-xs font-black uppercase leading-tight px-2 py-1 rounded-lg ${
+                                isCurrent ? 'bg-slate-800 text-white' : 'text-slate-700'
+                              }`}
+                            >
+                              {member}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               </>
