@@ -184,6 +184,35 @@ const getInnerPanelClass = (teamCode, darkMode = false) => {
 
 const isTeamDark = (teamCode) => teamThemes[getThemeKey(teamCode)]?.dark === true;
 
+// ─── helpers for new features ────────────────────────────────────────────────
+
+const TAILWIND_HEX = {
+  'green-300':'#86efac','green-400':'#4ade80','green-500':'#22c55e','green-600':'#16a34a',
+  'red-400':'#f87171','red-500':'#ef4444','red-600':'#dc2626',
+  'blue-400':'#60a5fa','blue-500':'#3b82f6','blue-600':'#2563eb','blue-900':'#1e3a5f',
+  'yellow-300':'#fde047','yellow-400':'#facc15','yellow-500':'#eab308','yellow-600':'#ca8a04',
+  'orange-500':'#f97316','rose-400':'#fb7185',
+  'sky-200':'#bae6fd','sky-400':'#38bdf8','sky-500':'#0ea5e9',
+  'slate-400':'#94a3b8','slate-900':'#0f172a','white':'#ffffff',
+};
+
+function getTeamCodes(team) {
+  if (team === 'FWCI1') return ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8'];
+  if (team === 'FWCH1') return ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14'];
+  if (team === 'FWCH2') return ['FWC15','FWC16','FWC17','FWC18','FWC19','FWC20'];
+  if (team === 'COCA') return Array.from({ length: 14 }, (_, i) => `CC${i + 1}`);
+  return Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
+}
+
+function getTeamConfettiColors(teamCode) {
+  const gradient = teamThemes[getThemeKey(teamCode)]?.gradient || '';
+  const colors = (gradient.match(/(?:from|via|to)-([^\s]+)/g) || [])
+    .map(m => TAILWIND_HEX[m.replace(/^(?:from|via|to)-/, '')]).filter(Boolean);
+  return colors.length >= 2 ? [...colors, '#ffffff'] : ['#4ade80', '#22c55e', '#60a5fa', '#ffffff'];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function PaniniAlbum2026() {
   if (VIEW_PARAM === 'repetidas') return <RepeatidasView />;
   const [currentView, setCurrentView] = useState('home');
@@ -194,6 +223,13 @@ export default function PaniniAlbum2026() {
   const [showQR, setShowQR] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const isInitialLoad = useRef(true);
+
+  // New feature state
+  const [celebration, setCelebration] = useState(null);
+  const [justPastedCode, setJustPastedCode] = useState(null);
+  const [highlightCode, setHighlightCode] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -381,21 +417,42 @@ export default function PaniniAlbum2026() {
   }, [currentTeam, completed, stickerCount]);
 
   const toggleSticker = (code) => {
-    setCompleted((prev) => {
-      const current = prev[code];
+    const current = completed[code];
+    let next;
+    if (current === true) {
+      next = { ...completed, [code]: 'repeated' };
+    } else if (current === 'repeated') {
+      next = { ...completed };
+      delete next[code];
+    } else {
+      next = { ...completed, [code]: true };
+    }
+    setCompleted(next);
 
-      if (current === true) {
-        return { ...prev, [code]: 'repeated' };
+    // Only trigger animations/celebrations when going empty → completed
+    if (!current) {
+      setJustPastedCode(code);
+      setTimeout(() => setJustPastedCode(null), 450);
+
+      // Album completion check (excludes Coca-Cola)
+      const newCount = Object.entries(next)
+        .filter(([c, v]) => !c.startsWith('CC') && isCompletedSticker(v)).length;
+      if (newCount === TOTAL_STICKERS) {
+        setTimeout(() => setCelebration({ type: 'album' }), 350);
+        return;
       }
 
-      if (current === 'repeated') {
-        const next = { ...prev };
-        delete next[code];
-        return next;
+      // Team completion check
+      const teamForCode = getTeamForCode(code);
+      if (teamForCode && teamForCode !== 'COCA') {
+        const codes = getTeamCodes(teamForCode);
+        const wasComplete = codes.every(c => isCompletedSticker(completed[c]));
+        const nowComplete = codes.every(c => isCompletedSticker(next[c]));
+        if (nowComplete && !wasComplete) {
+          setTimeout(() => setCelebration({ type: 'team', team: teamForCode }), 350);
+        }
       }
-
-      return { ...prev, [code]: true };
-    });
+    }
   };
 
   const toggleDarkMode = async () => {
@@ -520,6 +577,68 @@ export default function PaniniAlbum2026() {
     ];
   }, [completed, selectionTeams]);
 
+  // Search index: all toggleable stickers with searchable text
+  const searchIndex = useMemo(() => {
+    const entries = [];
+    const fwciCodes = ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8'];
+    const fwciLabels = ['PANINI','Logo Copa 1','Logo Copa 2','Mascotas','Póster','Balón Oficial','Póster Canadá','Póster México','Póster USA'];
+    fwciCodes.forEach((code, i) => entries.push({ code, label: fwciLabels[i], team: 'FWCI1', teamName: 'Intro FWC', teamFlag: '⚽' }));
+
+    const fwchData = [
+      { code:'FWC9', label:'ITALIA 1934', team:'FWCH1' },
+      { code:'FWC10', label:'URUGUAY 1950', team:'FWCH1' },
+      { code:'FWC11', label:'RF ALEMANIA 1954', team:'FWCH1' },
+      { code:'FWC12', label:'BRASIL 1958', team:'FWCH1' },
+      { code:'FWC13', label:'BRASIL 1962', team:'FWCH1' },
+      { code:'FWC14', label:'RF ALEMANIA 1974', team:'FWCH1' },
+      { code:'FWC15', label:'ARGENTINA 1986', team:'FWCH2' },
+      { code:'FWC16', label:'BRASIL 1994', team:'FWCH2' },
+      { code:'FWC17', label:'BRASIL 2002', team:'FWCH2' },
+      { code:'FWC18', label:'ITALIA 2006', team:'FWCH2' },
+      { code:'FWC19', label:'ALEMANIA 2014', team:'FWCH2' },
+      { code:'FWC20', label:'ARGENTINA 2022', team:'FWCH2' },
+    ];
+    fwchData.forEach(d => entries.push({ ...d, teamName: 'FWC Historia', teamFlag: '⭐' }));
+
+    selectionTeams.forEach(team => {
+      const info = teamData[team];
+      for (let id = 1; id <= 20; id++) {
+        const code = `${team}${id}`;
+        const label = id === 1 ? 'Escudo' : id === 13 ? 'Foto equipo' : (playerNames[team]?.[id] || `Jugador ${id}`);
+        entries.push({ code, label, team, teamName: info?.name || team, teamFlag: info?.flag || '🏳️' });
+      }
+    });
+
+    for (let id = 1; id <= 14; id++) {
+      entries.push({ code: `CC${id}`, label: playerNames.CC?.[id] || `Jugador ${id}`, team: 'COCA', teamName: 'Coca-Cola', teamFlag: '🥤' });
+    }
+
+    return entries;
+  }, [selectionTeams]);
+
+  const searchResults = useMemo(() => {
+    if (searchQuery.length < 2) return [];
+    const q = searchQuery.toLowerCase().trim();
+    return searchIndex.filter(e =>
+      e.code.toLowerCase().startsWith(q) ||
+      e.label.toLowerCase().includes(q) ||
+      e.teamName.toLowerCase().includes(q)
+    ).slice(0, 6);
+  }, [searchQuery, searchIndex]);
+
+  const handleSearchSelect = (entry) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    const teamIdx = teams.indexOf(entry.team);
+    if (teamIdx >= 0) {
+      window.scrollTo(0, 0);
+      setCurrentTeamIndex(teamIdx);
+      setCurrentView('album');
+      setHighlightCode(entry.code);
+      setTimeout(() => setHighlightCode(null), 3000);
+    }
+  };
+
   const currentTeamCompleted = currentTeam.startsWith('FWCI')
     ? ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => isCompletedSticker(completed[code])).length
@@ -553,7 +672,51 @@ export default function PaniniAlbum2026() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 relative">
+            {/* Search */}
+            {searchOpen && (
+              <div className="relative flex items-center gap-1">
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery(''); } }}
+                  placeholder="Código o jugador…"
+                  className={`px-3 py-2 rounded-xl text-sm font-black border-2 w-32 sm:w-48 outline-none transition-all ${darkMode ? 'bg-[#2a2a4a] border-[#4a4a6a] text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400'}`}
+                />
+                <button
+                  onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                  className={`font-black text-base leading-none px-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}
+                >
+                  ✕
+                </button>
+                {searchResults.length > 0 && (
+                  <div className={`absolute top-full right-0 mt-1 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl shadow-2xl overflow-hidden z-[200] ${darkMode ? 'bg-[#1a1a2e] border border-[#3a3a5a]' : 'bg-white border border-slate-200'}`}>
+                    {searchResults.map(entry => (
+                      <button
+                        key={entry.code}
+                        onClick={() => handleSearchSelect(entry)}
+                        className={`w-full px-4 py-2.5 text-left flex items-center gap-3 border-b last:border-b-0 transition-colors ${darkMode ? 'border-[#2a2a4a] hover:bg-[#2a2a4a] text-white' : 'border-slate-100 hover:bg-slate-50'}`}
+                      >
+                        <span className="text-xl leading-none shrink-0">{entry.teamFlag}</span>
+                        <div className="min-w-0">
+                          <div className={`font-black text-xs uppercase ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>{entry.code}</div>
+                          <div className="font-black text-sm truncate">{entry.label}</div>
+                          <div className={`text-xs truncate ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{entry.teamName}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              onClick={() => setSearchOpen(s => !s)}
+              title="Buscar figurita"
+              className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base transition-colors duration-300 ${darkMode ? 'bg-white text-slate-900' : 'bg-slate-800 text-white'}`}
+            >
+              🔍
+            </button>
             <button
               onClick={toggleDarkMode}
               className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base transition-colors duration-300 ${darkMode ? 'bg-white text-slate-900' : 'bg-slate-800 text-white'}`}
@@ -775,7 +938,7 @@ export default function PaniniAlbum2026() {
               </button>
             </div>
 
-            {/* Mobile identity strip — replaces duplicated header inside panel */}
+            {/* Mobile identity strip */}
             <div className="lg:hidden flex items-center gap-3 mb-4 px-3 py-2 bg-black/20 rounded-2xl">
               <span className="text-3xl leading-none">{currentTeamInfo.flag}</span>
               <div className="flex-1 min-w-0">
@@ -830,6 +993,8 @@ export default function PaniniAlbum2026() {
                             currentTeam={currentTeam}
                             onToggle={toggleSticker}
                             darkMode={darkMode}
+                            justPasted={justPastedCode === sticker?.code}
+                            highlighted={highlightCode === sticker?.code}
                           />
                         );
                       })}
@@ -860,6 +1025,8 @@ export default function PaniniAlbum2026() {
                             currentTeam={currentTeam}
                             onToggle={toggleSticker}
                             darkMode={darkMode}
+                            justPasted={justPastedCode === sticker?.code}
+                            highlighted={highlightCode === sticker?.code}
                           />
                         );
                       })}
@@ -872,7 +1039,15 @@ export default function PaniniAlbum2026() {
                   <div className={`lg:hidden p-3 ${getInnerPanelClass(currentTeam, darkMode)}`}>
                     <div className="grid grid-cols-4 gap-2">
                       {stickers.map((sticker) => (
-                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                        <Sticker
+                          key={sticker.code}
+                          sticker={sticker}
+                          currentTeam={currentTeam}
+                          onToggle={toggleSticker}
+                          darkMode={darkMode}
+                          justPasted={justPastedCode === sticker.code}
+                          highlighted={highlightCode === sticker.code}
+                        />
                       ))}
                     </div>
                   </div>
@@ -891,10 +1066,26 @@ export default function PaniniAlbum2026() {
                         </div>
                       </div>
                       {stickers.slice(0, 2).map((sticker) => (
-                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                        <Sticker
+                          key={sticker.code}
+                          sticker={sticker}
+                          currentTeam={currentTeam}
+                          onToggle={toggleSticker}
+                          darkMode={darkMode}
+                          justPasted={justPastedCode === sticker.code}
+                          highlighted={highlightCode === sticker.code}
+                        />
                       ))}
                       {stickers.slice(2, 6).map((sticker) => (
-                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                        <Sticker
+                          key={sticker.code}
+                          sticker={sticker}
+                          currentTeam={currentTeam}
+                          onToggle={toggleSticker}
+                          darkMode={darkMode}
+                          justPasted={justPastedCode === sticker.code}
+                          highlighted={highlightCode === sticker.code}
+                        />
                       ))}
                     </div>
                   </div>
@@ -902,7 +1093,15 @@ export default function PaniniAlbum2026() {
                   <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam, darkMode)} hidden lg:block`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       {stickers.slice(6, 9).map((sticker) => (
-                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                        <Sticker
+                          key={sticker.code}
+                          sticker={sticker}
+                          currentTeam={currentTeam}
+                          onToggle={toggleSticker}
+                          darkMode={darkMode}
+                          justPasted={justPastedCode === sticker.code}
+                          highlighted={highlightCode === sticker.code}
+                        />
                       ))}
                     </div>
                   </div>
@@ -915,10 +1114,26 @@ export default function PaniniAlbum2026() {
                     {stickers.map((sticker) =>
                       sticker.id === 13 ? (
                         <div key={sticker.code} className="col-span-2">
-                          <Sticker sticker={sticker} horizontal currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                          <Sticker
+                            sticker={sticker}
+                            horizontal
+                            currentTeam={currentTeam}
+                            onToggle={toggleSticker}
+                            darkMode={darkMode}
+                            justPasted={justPastedCode === sticker.code}
+                            highlighted={highlightCode === sticker.code}
+                          />
                         </div>
                       ) : (
-                        <Sticker key={sticker.code} sticker={sticker} currentTeam={currentTeam} onToggle={toggleSticker} darkMode={darkMode} />
+                        <Sticker
+                          key={sticker.code}
+                          sticker={sticker}
+                          currentTeam={currentTeam}
+                          onToggle={toggleSticker}
+                          darkMode={darkMode}
+                          justPasted={justPastedCode === sticker.code}
+                          highlighted={highlightCode === sticker.code}
+                        />
                       )
                     )}
                     {teamGroups[currentTeam] && (() => {
@@ -990,6 +1205,8 @@ export default function PaniniAlbum2026() {
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
                       darkMode={darkMode}
+                      justPasted={justPastedCode === sticker.code}
+                      highlighted={highlightCode === sticker.code}
                     />
                   ))}
 
@@ -1000,6 +1217,8 @@ export default function PaniniAlbum2026() {
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
                       darkMode={darkMode}
+                      justPasted={justPastedCode === sticker.code}
+                      highlighted={highlightCode === sticker.code}
                     />
                   ))}
                 </div>
@@ -1014,6 +1233,8 @@ export default function PaniniAlbum2026() {
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
                       darkMode={darkMode}
+                      justPasted={justPastedCode === sticker.code}
+                      highlighted={highlightCode === sticker.code}
                     />
                   ))}
 
@@ -1025,6 +1246,8 @@ export default function PaniniAlbum2026() {
                         currentTeam={currentTeam}
                         onToggle={toggleSticker}
                         darkMode={darkMode}
+                        justPasted={justPastedCode === stickers[12].code}
+                        highlighted={highlightCode === stickers[12].code}
                       />
                     </div>
                   )}
@@ -1036,6 +1259,8 @@ export default function PaniniAlbum2026() {
                       currentTeam={currentTeam}
                       onToggle={toggleSticker}
                       darkMode={darkMode}
+                      justPasted={justPastedCode === sticker.code}
+                      highlighted={highlightCode === sticker.code}
                     />
                   ))}
 
@@ -1174,12 +1399,15 @@ export default function PaniniAlbum2026() {
         </div>
       )}
       {showQR && <QRModal onClose={() => setShowQR(false)} />}
+      {celebration && (
+        <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
+      )}
     </div>
   );
 }
 
 
-function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode = false }) {
+function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode = false, justPasted = false, highlighted = false }) {
   const labels = {
     shield: 'Escudo',
     team: 'Foto Equipo'
@@ -1209,11 +1437,13 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
     borderColor: '#a0a0a0'
   } : undefined;
 
+  const animClass = justPasted ? 'sticker-paste' : highlighted ? 'sticker-pulse' : '';
+
   return (
     <button
       onClick={() => onToggle(sticker.code)}
       style={paniniStyle}
-      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? repeatedBg : sticker.code === '00' ? '' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? completedBg : emptyBg} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'}`}
+      className={`relative border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center transition active:opacity-60 ${sticker.horizontal || horizontal ? 'aspect-[3/2]' : 'aspect-[2/3]'} ${sticker.repeated ? repeatedBg : sticker.code === '00' ? '' : sticker.code === 'FWC6' ? 'bg-red-200 border-red-400' : sticker.code === 'FWC7' ? 'bg-green-200 border-green-500' : sticker.code === 'FWC8' ? 'bg-blue-200 border-blue-500' : sticker.completed ? completedBg : emptyBg} ${sticker.completed || sticker.repeated ? 'border-[4px] scale-[1.02]' : 'border-2'} ${animClass}`}
     >
       {isPlayerSticker && (
         <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={svgStyle}>
@@ -1395,6 +1625,123 @@ function RepeatidasView() {
           </div>
         ))}
       </main>
+    </div>
+  );
+}
+
+// ─── Confetti ────────────────────────────────────────────────────────────────
+
+function Confetti({ colors }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
+
+    const particles = Array.from({ length: 120 }, () => ({
+      x: Math.random() * W,
+      y: -10 - Math.random() * 220,
+      w: 7 + Math.random() * 10,
+      h: 3 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.13,
+      vx: (Math.random() - 0.5) * 3.5,
+      vy: 2.5 + Math.random() * 3.5,
+      alpha: 1,
+    }));
+
+    let raf;
+    const t0 = Date.now();
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      const elapsed = Date.now() - t0;
+      let alive = false;
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.rotSpeed;
+        if (elapsed > 1800) p.alpha = Math.max(0, p.alpha - 0.016);
+        if (p.alpha > 0 && p.y < H + 20) alive = true;
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+
+      if (alive) raf = requestAnimationFrame(draw);
+    };
+
+    raf = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 190 }}
+    />
+  );
+}
+
+// ─── CelebrationModal ────────────────────────────────────────────────────────
+
+function CelebrationModal({ celebration, onClose }) {
+  const isAlbum = celebration.type === 'album';
+  const team = celebration.team;
+  const teamInfo = team ? teamData[team] : null;
+  const themeKey = team ? getThemeKey(team) : null;
+  const theme = themeKey ? teamThemes[themeKey] : null;
+
+  const gradientClass = isAlbum
+    ? 'from-yellow-400 via-pink-500 to-purple-600'
+    : theme?.gradient || 'from-emerald-500 to-green-600';
+
+  const confettiColors = isAlbum
+    ? ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF8E53', '#FFEAA7', '#ffffff']
+    : getTeamConfettiColors(team);
+
+  const isDark = isAlbum || theme?.dark;
+
+  return (
+    <div className="fixed inset-0 z-[160]">
+      <Confetti colors={confettiColors} />
+      <div
+        className="absolute inset-0 bg-black/60 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <div
+          className={`celebrate-card bg-gradient-to-br ${gradientClass} rounded-3xl p-8 shadow-2xl max-w-sm w-full text-center`}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="text-7xl mb-4 drop-shadow-lg select-none">
+            {isAlbum ? '🏆' : teamInfo?.flag || '🏅'}
+          </div>
+          <div className={`text-4xl font-black italic uppercase mb-2 drop-shadow ${isDark ? 'text-white' : 'text-slate-800'}`}>
+            ¡Felicitaciones!
+          </div>
+          <div className={`text-xl font-black mb-8 ${isDark ? 'text-white/90' : 'text-slate-700'}`}>
+            {isAlbum
+              ? '¡Completaste el álbum!'
+              : `¡Completaste ${teamInfo?.name || team}!`}
+          </div>
+          <button
+            onClick={onClose}
+            className={`px-10 py-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform ${isDark ? 'bg-white text-slate-800 hover:bg-slate-100' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
+          >
+            ¡Gracias! 🎉
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
