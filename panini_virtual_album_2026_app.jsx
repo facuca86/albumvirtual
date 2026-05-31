@@ -442,9 +442,9 @@ export default function PaniniAlbum2026() {
         return;
       }
 
-      // Team completion check
+      // Team completion check (includes Coca-Cola)
       const teamForCode = getTeamForCode(code);
-      if (teamForCode && teamForCode !== 'COCA') {
+      if (teamForCode) {
         const codes = getTeamCodes(teamForCode);
         const wasComplete = codes.every(c => isCompletedSticker(completed[c]));
         const nowComplete = codes.every(c => isCompletedSticker(next[c]));
@@ -1708,6 +1708,8 @@ function CelebrationModal({ celebration, onClose }) {
 
   const confettiColors = isAlbum
     ? ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF8E53', '#FFEAA7', '#ffffff']
+    : team === 'COCA'
+    ? ['#e41f1f', '#ff4444', '#ff6666', '#cc0000', '#ffffff', '#ffcccc']
     : getTeamConfettiColors(team);
 
   const isDark = isAlbum || theme?.dark;
