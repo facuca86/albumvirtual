@@ -1226,7 +1226,7 @@ export default function PaniniAlbum2026() {
 
               <div className={`p-3 sm:p-8 ${getInnerPanelClass(currentTeam, darkMode)} ${currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
-                  {stickers.slice(10, 12).map((sticker) => (
+                  {stickers.slice(10, currentTeam === 'COCA' ? 13 : 12).map((sticker) => (
                     <Sticker
                       key={sticker.code}
                       sticker={sticker}
