@@ -769,11 +769,19 @@ export default function PaniniAlbum2026() {
           <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}>
             <h2 className="text-3xl font-black italic uppercase mb-6">Estadísticas Selecciones</h2>
             <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
-              {selectionStats.map((item) => (
-                <div key={item.key} className="font-black text-lg sm:text-xl">
-                  {item.emoji} {item.name}: {item.completed} / {item.total}
-                </div>
-              ))}
+              {selectionStats.map((item) => {
+                const isComplete = item.completed === item.total;
+                return (
+                  <div key={item.key} className={`font-black text-lg sm:text-xl flex items-center gap-2 ${isComplete ? 'text-green-500' : ''}`}>
+                    <span>{item.emoji} {item.name}: {item.completed} / {item.total}</span>
+                    {isComplete && (
+                      <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wide">
+                        Completo
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <button
               onClick={() => {
@@ -1347,7 +1355,18 @@ export default function PaniniAlbum2026() {
             <h3 className="text-2xl font-black italic uppercase mb-6">Estadísticas</h3>
             <div className="space-y-3 font-black">
               <div>Figuritas completadas: {completedCount} / {TOTAL_STICKERS}</div>
-              <div>Porcentaje completado: {completionPercent}%</div>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span>Progreso</span>
+                  <span>{completionPercent}%</span>
+                </div>
+                <div className={`w-full rounded-full h-3 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                  <div
+                    className="bg-green-500 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${completionPercent}%` }}
+                  />
+                </div>
+              </div>
               <div>Me faltan: {remainingCount}</div>
               <div>Brillantes: {brilliantCompletedCount} / 68</div>
               <div>Repetidas: {repeatedCount}</div>
@@ -1372,7 +1391,7 @@ export default function PaniniAlbum2026() {
                 <span className="w-full text-green-600 font-black">{importMessage}</span>
               )}
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'} flex flex-wrap gap-3`}>
               <button
                 onClick={() => {
                   setShowStats(false);
@@ -1390,7 +1409,7 @@ export default function PaniniAlbum2026() {
               </button>
               <button
                 onClick={() => setShowStats(false)}
-                className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+                className={`px-6 py-3 rounded-2xl font-black ${darkMode ? 'bg-slate-600 text-white' : 'bg-slate-300 text-slate-800'}`}
               >
                 Cerrar
               </button>
