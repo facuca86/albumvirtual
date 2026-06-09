@@ -819,7 +819,7 @@ export default function PaniniAlbum2026() {
                     key={proyecto.id}
                     style={btnStyle}
                     className={btnClass}
-                    onClick={() => window.open(proyecto.url, '_blank')}
+                    onClick={() => { window.location.href = proyecto.url; }}
                   >
                     <div className="text-3xl font-black italic uppercase">{proyecto.label}</div>
                   </button>
