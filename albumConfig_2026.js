@@ -309,6 +309,24 @@ export const albumConfig = {
       url: 'https://facuca86.github.io/albumvirtual-2018/',
       style: 'russia',
     },
+    {
+      id: 'paniniBrazil2014',
+      label: 'Mundial 2014 · Brasil',
+      url: 'https://facuca86.github.io/albumvirtual-2014/',
+      style: 'brazil2014',
+    },
+    {
+      id: 'paniniSouthAfrica2010',
+      label: 'Mundial 2010 · Sudáfrica',
+      url: 'https://facuca86.github.io/albumvirtual-2010/',
+      style: 'southafrica2010',
+    },
+    {
+      id: 'paniniGermany2006',
+      label: 'Mundial 2006 · Alemania',
+      url: 'https://facuca86.github.io/albumvirtual-2006/',
+      style: 'germany2006',
+    },
   ],
 
   // ── Paleta de colores centralizada ─────────────────────────────────────────
@@ -367,6 +385,13 @@ export const albumConfig = {
       cwcBg: '#000000',
       cwcBorder: '#B8860B',
       russiaBg: '#0E4CAC',
+      brazil2014Bg: '#5FBFD8',
+      brazil2014Text: '#5FA63A',
+      southafrica2010Bg: '#D6491F',
+      southafrica2010Text: '#F8E4B3',
+      southafrica2010Border: '#B92F14',
+      germany2006Bg: '#0A839C',
+      germany2006Border: '#066F88',
     },
 
     // Colores de confeti de las celebraciones
