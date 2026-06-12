@@ -284,3 +284,167 @@ Dado el tamaño de reglas condicionales y datasets:
 - Esta entrega fue **100% documental**.
 - No se alteraron reglas funcionales ni datos del álbum.
 - El objetivo fue dejar trazabilidad técnica clara para futuros cambios de implementación.
+
+---
+
+## 7) Migración a configuración externa (`albumConfig_2026.js`)
+
+### 7.1 Motivación
+El álbum 2026 fue el primero del proyecto y tenía **todos los datos hardcodeados** dentro de `panini_virtual_album_2026_app.jsx` (identidad, conteos, catálogo de equipos, grupos, secciones especiales, navegación entre proyectos y colores inline). El álbum 2022 ya estaba refactorizado con un archivo de configuración externo (`albumConfig_2022.js`) que parametriza todo. Esta iteración migra el 2026 a **ese mismo patrón**: un único archivo de configuración como fuente de verdad, fácil de mantener y documentado.
+
+**Es una refactorización pura.** Ningún comportamiento ni aspecto visual cambió: mismos conteos (981), mismo `id` (`paniniWorldCup2026`), mismos colores, misma persistencia, mismas vistas. Solo cambió *dónde viven* los datos.
+
+### 7.2 Archivo creado: `albumConfig_2026.js`
+Se extrajo a este archivo nuevo **todo** lo que estaba hardcodeado en el JSX. Exporta un objeto `albumConfig` con estos bloques:
+
+| Bloque | Contenido | De dónde salió en el JSX |
+|---|---|---|
+| **Identidad / almacenamiento** | `id`, `owner`, `title`, `subtitle`, `exportFileName`, `localStorageKey`, `localStorageDarkKey` | `ALBUM_ID`, `ALBUM_OWNER`, `LOCAL_STORAGE_KEY`, `LOCAL_STORAGE_DARK_KEY`, título/subtítulo del header, nombre del backup |
+| **Conteos** | `totalStickers` (981), `teamStickerCount` (20), `counts` (`team`, `fwci`, `fwch`, `coca`) | `TOTAL_STICKERS`, `STICKERS_TEAM`, `STICKERS_FWCI`, `STICKERS_FWCH`, `STICKERS_COCA` |
+| **`teams`** | Orden de navegación completo (52 entradas: `FWCI1`, 48 selecciones, `FWCH1`, `FWCH2`, `COCA`) | `teams` |
+| **`teamData`** | Nombres, federaciones y banderas (53 entradas: 48 selecciones + `FWCI1`, `FWCI2`, `FWCH1`, `FWCH2`, `COCA`) | `teamData` |
+| **`teamGroups`** | Pertenencia a grupo y miembros mostrados en la mini-tabla de cada selección (48) | `teamGroups` |
+| **`groups`** | Los 12 grupos A–L con su color y selecciones | `groups` |
+| **`indexTeamIcons`** | Iconos del índice para secciones especiales | `indexTeamIcons` |
+| **`specialSections`** | Estructura real de Intro e Historia (ver 7.4) | `fwciDefs`, `historyPageItems`, `historySelectable` |
+| **`proyectos`** | Lista "Otros Proyectos" (ver Sección 8) | `PROYECTOS` |
+| **`palette`** | Todos los colores antes inline en el JSX (ver 7.5) | colores `#...` repartidos por el JSX |
+
+### 7.3 Cambios en `panini_virtual_album_2026_app.jsx`
+- Se agregó el import: `import { albumConfig } from './albumConfig_2026';`
+- Las constantes de módulo (`ALBUM_ID`, `LOCAL_STORAGE_KEY`, `LOCAL_STORAGE_DARK_KEY`, `PROYECTOS`, `ALBUM_OWNER`, `STICKERS_*`, `TOTAL_STICKERS`, `teams`, `teamData`, `teamGroups`, `groups`, `indexTeamIcons`) **conservan su mismo nombre local**, pero ahora se **asignan desde `albumConfig`** en lugar de declararse con literales. Así, todo el cuerpo del componente (lógica de `toggleSticker`, conteos, exportar/importar, QR, persistencia) quedó **intacto**: solo cambió la fuente de los datos.
+- Se agregó el alias de módulo `const PAL = albumConfig.palette;` y se reemplazaron los colores inline por referencias a `PAL.*`. Las clases Tailwind de valor arbitrario (`bg-[#...]`) se reconstruyen con template literals (`` `bg-[${PAL.bgMain}]` ``), produciendo **exactamente la misma cadena de clase** que antes (el Play CDN de Tailwind las detecta igual vía su `MutationObserver`).
+- El contenido de las secciones especiales (`fwciDefs`, `historyPageItems`, `historySelectable`) ahora se lee de `albumConfig.specialSections`.
+- `handleExport` usa `albumConfig.exportFileName`; el header usa `albumConfig.title` / `albumConfig.subtitle`.
+
+### 7.4 Modelado de secciones especiales (Intro e Historia partidas en dos páginas)
+**Atención:** a diferencia del 2022 (Intro e Historia como sección única), el 2026 las tiene **partidas en dos páginas cada una**. Esto se modeló fielmente para no alterar el render:
+
+- **Intro** → `FWCI1` / `FWCI2` (códigos `00`, `FWC1..FWC8`). En el recorrido (`teams`) solo aparece `FWCI1`, que renderiza la intro en una sola página con dos paneles, igual que el JSX original. `FWCI2` existe en `teamData` (para el índice) pero no se recorre por separado. `specialSections.FWCI1.items` contiene la definición exacta de los 9 stickers de la intro.
+- **Historia** → `FWCH1` / `FWCH2` (códigos `FWC9..FWC20`). Cada página tiene su `pageItems` (grilla completa: stickers + casillas impresas) y su `selectable` (solo los stickers seleccionables).
+
+La prioridad fue **no cambiar el render**, no que el config sea idéntico al del 2022.
+
+### 7.5 Centralización de la paleta (`palette`)
+Todos los colores que estaban inline en el JSX se mapearon con nombres semánticos. **Los valores son idénticos a los originales** — es solo centralización, el resultado visual no cambia. Algunos ejemplos:
+
+| Nombre semántico | Valor | Uso |
+|---|---|---|
+| `bgMain` | `#880E4F` | Fondo principal (modo claro) |
+| `bgDark` | `#0f0f1a` | Fondo principal (modo oscuro) |
+| `surfaceDark` | `#1a1a2e` | Header, panel intro, navs móviles |
+| `surfaceCardDark` | `#1e1e30` | Tarjetas / panel interno (oscuro) |
+| `borderDark` | `#2a2a4a` | Bordes, barra de progreso, paneles |
+| `historyBg` | `#0d2167` | Fondo de páginas de Historia (FWCH) |
+| `cocaBg` | `#e41f1f` | Fondo de la sección Coca-Cola |
+| `groupsRadial` | `radial-gradient(…)` | Fondo de la vista Grupos |
+| `paniniFoilGradient` | `linear-gradient(…)` | Efecto metalizado del sticker PANINI |
+| `confettiAlbum` / `confettiCoca` / `confettiDefault` | arrays | Colores de confeti de celebraciones |
+| `projectStyles` | objeto | Estilos de los botones de "Otros Proyectos" |
+
+**Colores que se dejaron como están (intencionalmente):**
+- La tabla `TAILWIND_HEX` (líneas ~67–73): es un **decodificador interno** Tailwind→hex usado para derivar los colores de confeti por equipo, no parte de la "estética inline".
+- Clases Tailwind con nombre (`text-pink-800`, `text-pink-400`, `bg-slate-200`, etc.): ya son tokens centralizados de Tailwind; convertirlas a hex las alteraría.
+- Blanco/negro genéricos (`#ffffff`, `#1a1a1a`) del texto de las letras de grupo y un par de fallbacks defensivos (`#475569`, nunca alcanzados porque todos los grupos tienen color).
+
+### 7.6 Cambios en `index.html`
+Se agregó `albumConfig_2026.js` al pipeline de carga/transpilación, igual que los demás módulos locales:
+- Se hace `fetch('./albumConfig_2026.js')` y se genera su blob URL.
+- Se agregó la regla de reescritura del import: `from './albumConfig_2026'` → blob URL.
+- **No se cambió** la estrategia de carga de Firebase desde `gstatic.com` (la que evita el error `Service firestore is not available`).
+
+### 7.7 Nota: cuarto proyecto agregado a "Otros Proyectos"
+Como parte de esta migración, `proyectos` quedó con las **cuatro** entradas vigentes del estándar del proyecto: **Mundial 2026, Qatar 2022, CWC 2025 y Rusia 2018**. El JSX anterior solo listaba tres (faltaba 2018). Se agregó la entrada `paniniRussia2018` (`style: 'russia'`) y su tratamiento visual correspondiente en el bloque de estilos del componente (`backgroundColor: '#0E4CAC'`, texto blanco, sin borde especial), según el estándar descripto en la Sección 8.
+
+### 7.8 Cómo verificar que nada se rompió
+1. **Persistencia:** `albumConfig.id` sigue siendo `paniniWorldCup2026` → las claves de Firestore (`albumProgress/paniniWorldCup2026`, `albumSettings/paniniWorldCup2026`) y de localStorage (`paniniWorldCup2026_stickers`, `paniniWorldCup2026_darkMode`) no cambian. El progreso existente se carga igual.
+2. **Conteos:** `totalStickers` = 981; Coca-Cola (CC1–CC14) sigue excluida de `completedCount`/`completionPercent`/`remainingCount`.
+3. **Render:** abrir `index.html`, recorrer las 48 selecciones, los 12 grupos y las secciones especiales (FWCI1, FWCH1, FWCH2, COCA). Verificar que el índice muestra FWCI1/FWCH1/FWCH2/COCA y que FWCI2 no se recorre por separado (igual que antes).
+4. **Funciones:** brillantes (68), estadísticas, buscador, exportar/importar JSON y QR de repetidas funcionan igual.
+5. **Estética:** ningún color cambió de valor — el resultado visual es idéntico.
+6. **Consola:** la app carga sin errores (incluido el de Firestore, gracias a la carga desde `gstatic.com`).
+7. **Transpilación:** `albumConfig_2026.js` pasa `node --check`; el JSX transpila sin errores con `@babel/preset-react`.
+
+---
+
+## Sección 8: Cómo agregar un nuevo álbum a la vista "Otros Proyectos"
+
+Cada álbum tiene un menú de navegación entre proyectos que lista los demás álbumes disponibles. Cada vez que se crea un nuevo álbum, este procedimiento debe aplicarse en todos los repositorios existentes.
+
+**Estructura del array `PROYECTOS`**
+
+El array vive en el JSX principal (`panini_virtual_album_*_app.jsx`):
+
+```js
+const PROYECTOS = [
+  {
+    id: 'paniniWorldCup2026',
+    label: 'Mundial 2026',
+    url: 'https://facuca86.github.io/albumvirtual/',
+    style: 'multicolor',
+  },
+  {
+    id: 'paniniWorldCup2022',
+    label: 'Mundial 2022 · Qatar',
+    url: 'https://facuca86.github.io/albumvirtual-2022/',
+    style: 'qatar',
+  },
+  {
+    id: 'paniniCWC2025',
+    label: 'Club World Cup 2025',
+    url: 'https://facuca86.github.io/albumvirtual-cwc25/',
+    style: 'cwc',
+  },
+  {
+    id: 'paniniRussia2018',
+    label: 'Mundial 2018 · Rusia',
+    url: 'https://facuca86.github.io/albumvirtual-2018/',
+    style: 'russia',
+  },
+];
+```
+
+**Reglas de visibilidad y estilos**
+
+- El álbum actual se detecta comparando `proyecto.id` con `albumConfig.id` — el proyecto actual no se muestra en la lista (no tendría sentido navegar al álbum que ya estás viendo).
+- Los botones navegan en la misma pestaña: `onClick={() => { window.location.href = proyecto.url; }}`
+
+Cada estilo tiene su tratamiento visual definido en el JSX:
+
+| style | Estilos aplicados |
+|---|---|
+| `multicolor` | `background: linear-gradient(135deg, #e53e3e, #dd6b20, #d69e2e, #38a169, #3182ce, #805ad5)`, texto blanco |
+| `qatar` | `backgroundColor: '#6B0F1A'`, `border: '2px solid #B8860B'`, texto blanco |
+| `cwc` | `backgroundColor: '#000000'`, `border: '2px solid #B8860B'`, texto dorado (`text-yellow-400`) |
+| `russia` | `backgroundColor: '#0E4CAC'`, texto blanco, sin borde especial |
+
+Al agregar un nuevo álbum, definir un nuevo valor de `style` con su tratamiento visual representativo del torneo y agregarlo al bloque de estilos del componente.
+
+**Pasos para agregar un nuevo álbum**
+
+1. Agregar una nueva entrada al array `PROYECTOS` en el JSX de cada repositorio existente.
+2. Definir el estilo visual del nuevo álbum y agregarlo al bloque condicional de estilos del componente.
+3. El nuevo repositorio ya trae el array `PROYECTOS` actualizado desde su creación (fue clonado con la versión más reciente).
+4. Crear un pull request en cada repositorio con título `feat: agregar [nombre álbum] a otros proyectos`.
+
+**Prompt para Claude Code**
+
+Usar este prompt exacto en Claude Code cada vez que se agrega un nuevo álbum al menú "Otros Proyectos":
+
+```
+En la vista otros-proyectos del archivo _app.jsx de cada repositorio existente, agregar una nueva entrada al array PROYECTOS:
+{
+  id: '[id del nuevo álbum]',
+  label: '[nombre visible del álbum]',
+  url: '[url de GitHub Pages]',
+  style: '[nombre del estilo]',
+}
+Definir también el estilo visual del nuevo álbum en el bloque de estilos del componente. Cada álbum tiene su propio estilo visual representativo:
+    Mundial 2026: background: linear-gradient(135deg, #e53e3e, #dd6b20, #d69e2e, #38a169, #3182ce, #805ad5), texto blanco
+    Qatar 2022: backgroundColor: '#6B0F1A', border: '2px solid #B8860B', texto blanco
+    CWC 2025: backgroundColor: '#000000', border: '2px solid #B8860B', texto dorado (text-yellow-400)
+    Rusia 2018: backgroundColor: '#0E4CAC', texto blanco — sin borde especial
+Los botones navegan en la misma pestaña: onClick={() => { window.location.href = proyecto.url; }}. El álbum actual se excluye automáticamente comparando proyecto.id con albumConfig.id. Aplicar este cambio en todos los repositorios existentes y crear un pull request en cada uno con título feat: agregar [nombre álbum] a otros proyectos.
+```
+
+> **Nota de implementación (2026):** en este repositorio, tras la migración a `albumConfig_2026.js` (ver Sección 7), el array `PROYECTOS` se alimenta de `albumConfig.proyectos` y el bloque de estilos del componente ya incluye la rama `russia`. Agregar un nuevo álbum acá implica editar `albumConfig_2026.js` (array `proyectos`) y, si el torneo trae un estilo nuevo, sumar su rama en el bloque condicional de estilos del componente.

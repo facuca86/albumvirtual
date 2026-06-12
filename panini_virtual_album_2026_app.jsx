@@ -2,184 +2,38 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { db, doc, getDoc, setDoc } from './firebase';
 import { playerNames } from './playerNames';
 import { teamThemes } from './teamThemes';
+import { albumConfig } from './albumConfig_2026';
 
-const ALBUM_ID = 'paniniWorldCup2026';
+// ── Constantes derivadas de la configuración externa ──────────────────────────
+// Todos los datos antes hardcodeados viven ahora en `albumConfig_2026.js`. Acá se
+// re-exponen con los mismos nombres locales para no alterar el resto del archivo.
+const ALBUM_ID = albumConfig.id;
 
-const LOCAL_STORAGE_KEY = 'paniniWorldCup2026_stickers';
-const LOCAL_STORAGE_DARK_KEY = 'paniniWorldCup2026_darkMode';
+const LOCAL_STORAGE_KEY = albumConfig.localStorageKey;
+const LOCAL_STORAGE_DARK_KEY = albumConfig.localStorageDarkKey;
 
-const PROYECTOS = [
-  {
-    id: 'paniniWorldCup2026',
-    label: 'Mundial 2026',
-    url: 'https://facuca86.github.io/albumvirtual/',
-    style: 'multicolor',
-  },
-  {
-    id: 'paniniWorldCup2022',
-    label: 'Mundial 2022 · Qatar',
-    url: 'https://facuca86.github.io/albumvirtual-2022/',
-    style: 'qatar',
-  },
-  {
-    id: 'paniniCWC2025',
-    label: 'Club World Cup 2025',
-    url: 'https://facuca86.github.io/albumvirtual-cwc25/',
-    style: 'cwc',
-  },
-];
+const PROYECTOS = albumConfig.proyectos;
+const PAL = albumConfig.palette;
 
-const ALBUM_OWNER = "Facundo";
+const ALBUM_OWNER = albumConfig.owner;
 const VIEW_PARAM = new URLSearchParams(window.location.search).get('view');
 
-const STICKERS_FWCI = 9;
-const STICKERS_FWCH = 12;
-const STICKERS_COCA = 14;
-const STICKERS_TEAM = 20;
+const STICKERS_FWCI = albumConfig.counts.fwci;
+const STICKERS_FWCH = albumConfig.counts.fwch;
+const STICKERS_COCA = albumConfig.counts.coca;
+const STICKERS_TEAM = albumConfig.counts.team;
 // Coca-Cola stickers exist in the album but are not part of the official Panini collection
-const TOTAL_STICKERS = 981;
+const TOTAL_STICKERS = albumConfig.totalStickers;
 
-const teams = [
-  'FWCI1',
-  'MEX','RSA','KOR','CZE','CAN','BIH','QAT','SUI','BRA','MAR','HAI','SCO',
-  'USA','PAR','AUS','TUR','GER','CUW','CIV','ECU','NED','JPN','SWE','TUN',
-  'BEL','EGY','IRN','NZL','ESP','CPV','KSA','URU','FRA','SEN','IRQ','NOR',
-  'ARG','ALG','AUT','JOR','POR','COD','UZB','COL','ENG','CRO','GHA','PAN',
-  'FWCH1',
-  'FWCH2',
-  'COCA'
-];
+const teams = albumConfig.teams;
 
-const teamData = {
-  FWCI1: { name: 'Intro', federation: 'Opening Section', flag: '🏆' },
-  FWCI2: { name: 'Intro', federation: 'Opening Section', flag: '🌎' },
-  FWCH1: { name: 'FWC History', federation: 'World Champions', flag: '⭐' },
-  FWCH2: { name: 'FWC History', federation: 'World Champions', flag: '⭐' },
-  COCA: { name: 'Coca-Cola', federation: 'Promotional Collection', flag: '🥤' },
+const teamData = albumConfig.teamData;
 
-  ARG: { name: 'Argentina', federation: 'Asociación del Fútbol Argentino', flag: '🇦🇷' },
-  BRA: { name: 'Brasil', federation: 'Confederação Brasileira de Futebol', flag: '🇧🇷' },
-  MEX: { name: 'México', federation: 'Federación Mexicana de Fútbol', flag: '🇲🇽' },
-  GER: { name: 'Alemania', federation: 'Deutscher Fußball-Bund', flag: '🇩🇪' },
-  FRA: { name: 'Francia', federation: 'Fédération Française de Football', flag: '🇫🇷' },
-  ENG: { name: 'Inglaterra', federation: 'The Football Association', flag: '🏴' },
-  ESP: { name: 'España', federation: 'Real Federación Española de Fútbol', flag: '🇪🇸' },
-  URU: { name: 'Uruguay', federation: 'Asociación Uruguaya de Fútbol', flag: '🇺🇾' },
-  PAN: { name: 'Panamá', federation: 'Federación Panameña de Fútbol', flag: '🇵🇦' },
-  NOR: { name: 'Noruega', federation: 'Norges Fotballforbund', flag: '🇳🇴' },
-  RSA: { name: 'Sudáfrica', federation: 'South African Football Association', flag: '🇿🇦' },
-  KOR: { name: 'República de Corea', federation: 'Korea Football Association', flag: '🇰🇷' },
-  CZE: { name: 'República Checa', federation: 'Fotbalová asociace České republiky', flag: '🇨🇿' },
-  CAN: { name: 'Canadá', federation: 'Canada Soccer Association', flag: '🇨🇦' },
-  BIH: { name: 'Bosnia y Herzegovina', federation: 'Nogometni/Fudbalski Savez Bosne i Hercegovine', flag: '🇧🇦' },
-  QAT: { name: 'Catar', federation: 'Qatar Football Association', flag: '🇶🇦' },
-  SUI: { name: 'Suiza', federation: 'Schweizerischer Fussballverband', flag: '🇨🇭' },
-  MAR: { name: 'Marruecos', federation: 'Fédération Royale Marocaine de Football', flag: '🇲🇦' },
-  HAI: { name: 'Haití', federation: 'Fédération Haïtienne de Football', flag: '🇭🇹' },
-  SCO: { name: 'Escocia', federation: 'Scotland National Team', flag: '🏴' },
-  PAR: { name: 'Paraguay', federation: 'Asociación Paraguaya de Fútbol', flag: '🇵🇾' },
-  AUS: { name: 'Australia', federation: 'Football Australia', flag: '🇦🇺' },
-  TUR: { name: 'Turquía', federation: 'Türkiye Futbol Federasyonu', flag: '🇹🇷' },
-  CUW: { name: 'Curazao', federation: 'Federashon Futbòl Kòrsou', flag: '🇨🇼' },
-  CIV: { name: 'Costa de Marfil', federation: 'Fédération Ivoirienne de Football', flag: '🇨🇮' },
-  ECU: { name: 'Ecuador', federation: 'Federación Ecuatoriana de Fútbol', flag: '🇪🇨' },
-  NED: { name: 'Países Bajos', federation: 'Koninklijke Nederlandse Voetbalbond', flag: '🇳🇱' },
-  JPN: { name: 'Japón', federation: 'Japan Football Association', flag: '🇯🇵' },
-  SWE: { name: 'Suecia', federation: 'Svenska Fotbollförbundet', flag: '🇸🇪' },
-  TUN: { name: 'Túnez', federation: 'Fédération Tunisienne de Football', flag: '🇹🇳' },
-  BEL: { name: 'Bélgica', federation: 'Koninklijke Belgische Voetbalbond', flag: '🇧🇪' },
-  EGY: { name: 'Egipto', federation: 'Egyptian Football Association', flag: '🇪🇬' },
-  IRN: { name: 'Irán', federation: 'Football Federation Islamic Republic of Iran', flag: '🇮🇷' },
-  NZL: { name: 'Nueva Zelanda', federation: 'New Zealand Football', flag: '🇳🇿' },
-  CPV: { name: 'Cabo Verde', federation: 'Federação Caboverdiana de Futebol', flag: '🇨🇻' },
-  KSA: { name: 'Arabia Saudita', federation: 'Saudi Arabian Football Federation', flag: '🇸🇦' },
-  SEN: { name: 'Senegal', federation: 'Fédération Sénégalaise de Football', flag: '🇸🇳' },
-  IRQ: { name: 'Irak', federation: 'Iraqi Football Association', flag: '🇮🇶' },
-  ALG: { name: 'Argelia', federation: 'Fédération Algérienne de Football', flag: '🇩🇿' },
-  AUT: { name: 'Austria', federation: 'Österreichischer Fußball-Bund', flag: '🇦🇹' },
-  JOR: { name: 'Jordania', federation: 'Jordan Football Association', flag: '🇯🇴' },
-  POR: { name: 'Portugal', federation: 'Federação Portuguesa de Futebol', flag: '🇵🇹' },
-  COD: { name: 'Congo DR', federation: 'Fédération Congolaise de Football-Association', flag: '🇨🇩' },
-  UZB: { name: 'Uzbekistán', federation: 'Ozbekiston Futbol Federatsiyasi', flag: '🇺🇿' },
-  COL: { name: 'Colombia', federation: 'Federación Colombiana de Fútbol', flag: '🇨🇴' },
-  CRO: { name: 'Croacia', federation: 'Hrvatski nogometni savez', flag: '🇭🇷' },
-  GHA: { name: 'Ghana', federation: 'Ghana Football Association', flag: '🇬🇭' },
-  USA: { name: 'Estados Unidos', federation: 'U.S. Soccer Federation', flag: '🇺🇸' }
-};
+const teamGroups = albumConfig.teamGroups;
 
-const teamGroups = {
-  MEX: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
-  RSA: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
-  KOR: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
-  CZE: { group: 'A', members: ['México', 'Sudáfrica', 'Rep. de Corea', 'Rep. Checa'] },
-  CAN: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
-  BIH: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
-  QAT: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
-  SUI: { group: 'B', members: ['Canadá', 'Bosnia y Herz.', 'Catar', 'Suiza'] },
-  BRA: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
-  MAR: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
-  HAI: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
-  SCO: { group: 'C', members: ['Brasil', 'Marruecos', 'Haití', 'Escocia'] },
-  USA: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
-  PAR: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
-  AUS: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
-  TUR: { group: 'D', members: ['Estados Unidos', 'Paraguay', 'Australia', 'Turquía'] },
-  GER: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
-  CUW: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
-  CIV: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
-  ECU: { group: 'E', members: ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'] },
-  NED: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
-  JPN: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
-  SWE: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
-  TUN: { group: 'F', members: ['Países Bajos', 'Japón', 'Suecia', 'Túnez'] },
-  BEL: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
-  EGY: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
-  IRN: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
-  NZL: { group: 'G', members: ['Bélgica', 'Egipto', 'Irán', 'Nueva Zelanda'] },
-  ESP: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
-  CPV: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
-  KSA: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
-  URU: { group: 'H', members: ['España', 'Cabo Verde', 'Arabia Saudita', 'Uruguay'] },
-  FRA: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
-  SEN: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
-  IRQ: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
-  NOR: { group: 'I', members: ['Francia', 'Senegal', 'Irak', 'Noruega'] },
-  ARG: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
-  ALG: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
-  AUT: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
-  JOR: { group: 'J', members: ['Argentina', 'Argelia', 'Austria', 'Jordania'] },
-  POR: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
-  COD: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
-  UZB: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
-  COL: { group: 'K', members: ['Portugal', 'Congo DR', 'Uzbekistán', 'Colombia'] },
-  ENG: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
-  CRO: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
-  GHA: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
-  PAN: { group: 'L', members: ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'] },
-};
+const groups = albumConfig.groups;
 
-const groups = {
-  A: { color: '#73BB6A', teams: ['MEX','RSA','KOR','CZE'] },
-  B: { color: '#E30613', teams: ['CAN','BIH','QAT','SUI'] },
-  C: { color: '#B8D94A', teams: ['BRA','MAR','HAI','SCO'] },
-  D: { color: '#0A4E97', teams: ['USA','PAR','AUS','TUR'] },
-  E: { color: '#E55C0B', teams: ['GER','CUW','CIV','ECU'] },
-  F: { color: '#006B63', teams: ['NED','JPN','SWE','TUN'] },
-  G: { color: '#CACBDD', teams: ['BEL','EGY','IRN','NZL'] },
-  H: { color: '#5CC9CA', teams: ['ESP','CPV','KSA','URU'] },
-  I: { color: '#5B2E87', teams: ['FRA','SEN','IRQ','NOR'] },
-  J: { color: '#EDD6D6', teams: ['ARG','ALG','AUT','JOR'] },
-  K: { color: '#E4326C', teams: ['POR','COD','UZB','COL'] },
-  L: { color: '#7A121A', teams: ['ENG','CRO','GHA','PAN'] },
-};
-
-const indexTeamIcons = {
-  FWCI1: '⚽',
-  FWCI2: '⚽',
-  FWCH1: '🏆',
-  FWCH2: '🏆',
-  COCA: '⚽'
-};
+const indexTeamIcons = albumConfig.indexTeamIcons;
 
 
 const progressDocRef = db ? doc(db, 'albumProgress', ALBUM_ID) : null;
@@ -192,8 +46,8 @@ const getThemeKey = (teamCode) => {
 };
 
 const getTeamGradientClass = (teamCode) => {
-  if (teamCode === 'COCA') return 'bg-[#e41f1f]';
-  if (teamCode && teamCode.startsWith('FWCH')) return 'bg-[#0d2167]';
+  if (teamCode === 'COCA') return `bg-[${PAL.cocaBg}]`;
+  if (teamCode && teamCode.startsWith('FWCH')) return `bg-[${PAL.historyBg}]`;
 
   const themeKey = getThemeKey(teamCode);
   const gradient = teamThemes[themeKey]?.gradient;
@@ -201,8 +55,8 @@ const getTeamGradientClass = (teamCode) => {
 };
 
 const getInnerPanelClass = (teamCode, darkMode = false) => {
-  if (teamCode && teamCode.startsWith('FWCI')) return 'bg-[#1a1a2e]';
-  return darkMode ? 'bg-[#1e1e30]' : 'bg-[#f7f5f2]';
+  if (teamCode && teamCode.startsWith('FWCI')) return `bg-[${PAL.surfaceDark}]`;
+  return darkMode ? `bg-[${PAL.surfaceCardDark}]` : `bg-[${PAL.panelLight}]`;
 };
 
 const isTeamDark = (teamCode) => teamThemes[getThemeKey(teamCode)]?.dark === true;
@@ -231,7 +85,7 @@ function getTeamConfettiColors(teamCode) {
   const gradient = teamThemes[getThemeKey(teamCode)]?.gradient || '';
   const colors = (gradient.match(/(?:from|via|to)-([^\s]+)/g) || [])
     .map(m => TAILWIND_HEX[m.replace(/^(?:from|via|to)-/, '')]).filter(Boolean);
-  return colors.length >= 2 ? [...colors, '#ffffff'] : ['#4ade80', '#22c55e', '#60a5fa', '#ffffff'];
+  return colors.length >= 2 ? [...colors, '#ffffff'] : PAL.confettiDefault;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -335,32 +189,8 @@ export default function PaniniAlbum2026() {
 
 
   const historyPageItems = {
-    FWCH1: [
-      { type: 'printed', label: 'URUGUAY 1930' },
-      { type: 'sticker', code: 'FWC9', label: 'ITALIA 1934' },
-      { type: 'printed', label: 'ITALIA 1938' },
-      { type: 'sticker', code: 'FWC10', label: 'URUGUAY 1950' },
-      { type: 'sticker', code: 'FWC11', label: 'RF ALEMANIA 1954' },
-      { type: 'sticker', code: 'FWC12', label: 'BRASIL 1958' },
-      { type: 'sticker', code: 'FWC13', label: 'BRASIL 1962' },
-      { type: 'printed', label: 'INGLATERRA 1966' },
-      { type: 'printed', label: 'BRASIL 1970' },
-      { type: 'sticker', code: 'FWC14', label: 'RF ALEMANIA 1974' }
-    ],
-    FWCH2: [
-      { type: 'printed', label: 'ARGENTINA 1978' },
-      { type: 'printed', label: 'ITALIA 1982' },
-      { type: 'sticker', code: 'FWC15', label: 'ARGENTINA 1986' },
-      { type: 'printed', label: 'ALEMANIA 1990' },
-      { type: 'sticker', code: 'FWC16', label: 'BRASIL 1994' },
-      { type: 'printed', label: 'FRANCIA 1998' },
-      { type: 'sticker', code: 'FWC17', label: 'BRASIL 2002' },
-      { type: 'sticker', code: 'FWC18', label: 'ITALIA 2006' },
-      { type: 'printed', label: 'ESPAÑA 2010' },
-      { type: 'sticker', code: 'FWC19', label: 'ALEMANIA 2014' },
-      { type: 'printed', label: 'FRANCIA 2018' },
-      { type: 'sticker', code: 'FWC20', label: 'ARGENTINA 2022' }
-    ]
+    FWCH1: albumConfig.specialSections.FWCH1.pageItems,
+    FWCH2: albumConfig.specialSections.FWCH2.pageItems
   };
 
   const stickers = useMemo(() => {
@@ -380,17 +210,7 @@ export default function PaniniAlbum2026() {
       let horizontal = false;
 
       if (currentTeam === 'FWCI1') {
-        const fwciDefs = [
-          { code: '00', label: 'PANINI', type: 'panini', displayCode: '00', displayLabel: 'PANINI' },
-          { code: 'FWC1', label: 'Logo Copa 1', type: 'fwc' },
-          { code: 'FWC2', label: 'Logo Copa 2', type: 'fwc' },
-          { code: 'FWC3', label: 'Mascotas', type: 'fwc' },
-          { code: 'FWC4', label: 'Póster', type: 'fwc' },
-          { code: 'FWC5', label: 'Balón Oficial', type: 'fwc' },
-          { code: 'FWC6', label: 'Póster Canadá', type: 'fwc' },
-          { code: 'FWC7', label: 'Póster México', type: 'fwc' },
-          { code: 'FWC8', label: 'Póster USA', type: 'fwc' },
-        ];
+        const fwciDefs = albumConfig.specialSections.FWCI1.items;
         const def = fwciDefs[id - 1];
         code = def.code;
         label = def.label;
@@ -399,22 +219,8 @@ export default function PaniniAlbum2026() {
         label = playerNames.CC?.[id] || `Jugador ${id}`;
       } else if (currentTeam.startsWith('FWCH')) {
         const historySelectable = {
-          FWCH1: [
-            { code: 'FWC9', label: 'ITALIA 1934' },
-            { code: 'FWC10', label: 'URUGUAY 1950' },
-            { code: 'FWC11', label: 'RF ALEMANIA 1954' },
-            { code: 'FWC12', label: 'BRASIL 1958' },
-            { code: 'FWC13', label: 'BRASIL 1962' },
-            { code: 'FWC14', label: 'RF ALEMANIA 1974' }
-          ],
-          FWCH2: [
-            { code: 'FWC15', label: 'ARGENTINA 1986' },
-            { code: 'FWC16', label: 'BRASIL 1994' },
-            { code: 'FWC17', label: 'BRASIL 2002' },
-            { code: 'FWC18', label: 'ITALIA 2006' },
-            { code: 'FWC19', label: 'ALEMANIA 2014' },
-            { code: 'FWC20', label: 'ARGENTINA 2022' }
-          ]
+          FWCH1: albumConfig.specialSections.FWCH1.selectable,
+          FWCH2: albumConfig.specialSections.FWCH2.selectable
         };
 
         const historySticker = historySelectable[currentTeam][id - 1];
@@ -512,7 +318,7 @@ export default function PaniniAlbum2026() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'panini2026_backup.json';
+    a.download = albumConfig.exportFileName;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -671,23 +477,23 @@ export default function PaniniAlbum2026() {
     : stickers.filter((s) => s.completed).length;
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#0f0f1a] text-white' : 'bg-[#880E4F] text-slate-800'}`}>
-      <header className={`border-b shadow-sm sticky top-0 z-50 transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white'}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? `bg-[${PAL.bgDark}] text-white` : `bg-[${PAL.bgMain}] text-slate-800`}`}>
+      <header className={`border-b shadow-sm sticky top-0 z-50 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] border-[${PAL.borderDark}]` : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4 flex flex-row gap-2 justify-between items-center">
           <div className="min-w-0">
             <h1 className={`text-lg sm:text-3xl font-black italic truncate ${darkMode ? 'text-white' : ''}`}>
-              ÁLBUM VIRTUAL 2026
+              {albumConfig.title}
             </h1>
 
             <p className={`hidden sm:block text-xs uppercase tracking-[0.3em] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              FIFA WORLD CUP
+              {albumConfig.subtitle}
             </p>
 
             <div className={`mt-0.5 sm:mt-2 text-xs sm:text-sm font-black ${darkMode ? 'text-pink-400' : 'text-pink-800'}`}>
               {completionPercent}% COMPLETADO
             </div>
 
-            <div className={`mt-1 sm:mt-2 h-2 sm:h-2.5 w-24 sm:w-56 rounded-full overflow-hidden ${darkMode ? 'bg-[#2a2a4a]' : 'bg-slate-200'}`}>
+            <div className={`mt-1 sm:mt-2 h-2 sm:h-2.5 w-24 sm:w-56 rounded-full overflow-hidden ${darkMode ? `bg-[${PAL.borderDark}]` : 'bg-slate-200'}`}>
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-lime-500 to-green-600 transition-all"
                 style={{ width: `${completionPercent}%` }}
@@ -705,7 +511,7 @@ export default function PaniniAlbum2026() {
                   onChange={e => setSearchQuery(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery(''); } }}
                   placeholder="Código o jugador…"
-                  className={`px-3 py-2 rounded-xl text-sm font-black border-2 w-32 sm:w-48 outline-none transition-all ${darkMode ? 'bg-[#2a2a4a] border-[#4a4a6a] text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400'}`}
+                  className={`px-3 py-2 rounded-xl text-sm font-black border-2 w-32 sm:w-48 outline-none transition-all ${darkMode ? `bg-[${PAL.borderDark}] border-[${PAL.inputBorderDark}] text-white placeholder-slate-500` : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400'}`}
                 />
                 <button
                   onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
@@ -714,12 +520,12 @@ export default function PaniniAlbum2026() {
                   ✕
                 </button>
                 {searchResults.length > 0 && (
-                  <div className={`absolute top-full right-0 mt-1 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl shadow-2xl overflow-hidden z-[200] ${darkMode ? 'bg-[#1a1a2e] border border-[#3a3a5a]' : 'bg-white border border-slate-200'}`}>
+                  <div className={`absolute top-full right-0 mt-1 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl shadow-2xl overflow-hidden z-[200] ${darkMode ? `bg-[${PAL.surfaceDark}] border border-[${PAL.borderDarkAlt}]` : 'bg-white border border-slate-200'}`}>
                     {searchResults.map(entry => (
                       <button
                         key={entry.code}
                         onClick={() => handleSearchSelect(entry)}
-                        className={`w-full px-4 py-2.5 text-left flex items-center gap-3 border-b last:border-b-0 transition-colors ${darkMode ? 'border-[#2a2a4a] hover:bg-[#2a2a4a] text-white' : 'border-slate-100 hover:bg-slate-50'}`}
+                        className={`w-full px-4 py-2.5 text-left flex items-center gap-3 border-b last:border-b-0 transition-colors ${darkMode ? `border-[${PAL.borderDark}] hover:bg-[${PAL.borderDark}] text-white` : 'border-slate-100 hover:bg-slate-50'}`}
                       >
                         <span className="text-xl leading-none shrink-0">{entry.teamFlag}</span>
                         <div className="min-w-0">
@@ -761,7 +567,7 @@ export default function PaniniAlbum2026() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <button
               onClick={() => setCurrentView('groups')}
-              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Explorar Álbum
@@ -770,7 +576,7 @@ export default function PaniniAlbum2026() {
 
             <button
               onClick={() => setCurrentView('teams')}
-              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Índice
@@ -779,7 +585,7 @@ export default function PaniniAlbum2026() {
 
             <button
               onClick={() => setShowStats(true)}
-              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Estadísticas
@@ -788,7 +594,7 @@ export default function PaniniAlbum2026() {
 
             <button
               onClick={() => setCurrentView('otros-proyectos')}
-              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
             >
               <div className="text-3xl font-black italic uppercase">
                 Otros Proyectos
@@ -798,21 +604,24 @@ export default function PaniniAlbum2026() {
         )}
 
         {currentView === 'otros-proyectos' && (
-          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-2xl mx-auto transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}>
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-2xl mx-auto transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
             <h2 className="text-3xl font-black italic uppercase mb-6">Otros Proyectos</h2>
             <div className="space-y-4">
               {PROYECTOS.filter(p => p.id !== ALBUM_ID).map(proyecto => {
                 let btnStyle = {};
                 let btnClass = 'rounded-3xl p-8 shadow-xl w-full text-left active:scale-95 transition-transform font-black';
                 if (proyecto.style === 'multicolor') {
-                  btnStyle = { background: 'linear-gradient(135deg, #e53e3e, #dd6b20, #d69e2e, #38a169, #3182ce, #805ad5)' };
+                  btnStyle = { background: PAL.projectStyles.multicolor };
                   btnClass += ' text-white';
                 } else if (proyecto.style === 'qatar') {
-                  btnStyle = { backgroundColor: '#6B0F1A', border: '2px solid #B8860B' };
+                  btnStyle = { backgroundColor: PAL.projectStyles.qatarBg, border: `2px solid ${PAL.projectStyles.qatarBorder}` };
                   btnClass += ' text-white';
                 } else if (proyecto.style === 'cwc') {
-                  btnStyle = { backgroundColor: '#000000', border: '2px solid #B8860B' };
+                  btnStyle = { backgroundColor: PAL.projectStyles.cwcBg, border: `2px solid ${PAL.projectStyles.cwcBorder}` };
                   btnClass += ' text-yellow-400';
+                } else if (proyecto.style === 'russia') {
+                  btnStyle = { backgroundColor: PAL.projectStyles.russiaBg };
+                  btnClass += ' text-white';
                 }
                 return (
                   <button
@@ -828,7 +637,7 @@ export default function PaniniAlbum2026() {
             </div>
             <button
               onClick={() => setCurrentView('home')}
-              className={`mt-6 px-6 py-3 rounded-2xl font-black ${darkMode ? 'bg-[#2a2a4a] text-white' : 'bg-gray-200 text-black'}`}
+              className={`mt-6 px-6 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-gray-200 text-black'}`}
             >
               ← VOLVER
             </button>
@@ -836,7 +645,7 @@ export default function PaniniAlbum2026() {
         )}
 
         {currentView === 'stats-selections' && (
-          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}>
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
             <h2 className="text-3xl font-black italic uppercase mb-6">Estadísticas Selecciones</h2>
             <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
               {selectionStats.map((item) => {
@@ -874,7 +683,7 @@ export default function PaniniAlbum2026() {
                   setCurrentTeamIndex(teams.indexOf(team));
                   setCurrentView('album');
                 }}
-                className={`rounded-2xl p-4 shadow font-black italic active:scale-95 transition-colors duration-300 flex items-center gap-2 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}
+                className={`rounded-2xl p-4 shadow font-black italic active:scale-95 transition-colors duration-300 flex items-center gap-2 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
               >
                 <span>{indexTeamIcons[team] || teamData[team]?.flag || '🏳️'}</span>
                 <span>{teamData[team]?.name || team}</span>
@@ -886,7 +695,7 @@ export default function PaniniAlbum2026() {
         {currentView === 'groups' && (
           <div
             className="rounded-3xl p-4 sm:p-8 pb-24 sm:pb-8 shadow-xl"
-            style={{ background: 'radial-gradient(ellipse at center, #C92A7A, #A11C5B, #FF5A00, #B18BEA, #5D93E6, #8FC8FF, #E9F52A, #006B4F)' }}
+            style={{ background: PAL.groupsRadial }}
           >
             {/* Desktop nav */}
             <div className="hidden lg:flex justify-between items-center mb-6">
@@ -910,7 +719,7 @@ export default function PaniniAlbum2026() {
               <button
                 onClick={() => { setCurrentTeamIndex(0); setCurrentView('album'); }}
                 className="col-span-2 rounded-2xl p-4 font-black text-2xl sm:text-3xl active:scale-95 transition-transform"
-                style={{ backgroundColor: '#FFD700', color: '#E30613' }}
+                style={{ backgroundColor: PAL.introBtnBg, color: PAL.introBtnText }}
               >
                 INTRO
               </button>
@@ -946,7 +755,7 @@ export default function PaniniAlbum2026() {
                   setCurrentView('album');
                 }}
                 className="col-span-2 rounded-2xl p-4 font-black text-2xl sm:text-3xl active:scale-95 transition-transform"
-                style={{ backgroundColor: '#0A4E97', color: '#FFD700' }}
+                style={{ backgroundColor: PAL.championsBtnBg, color: PAL.championsBtnText }}
               >
                 CAMPEONES
               </button>
@@ -955,15 +764,15 @@ export default function PaniniAlbum2026() {
         )}
 
         {currentView === 'groups' && (
-          <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white border-slate-200'}`}>
+          <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] border-[${PAL.borderDark}]` : 'bg-white border-slate-200'}`}>
             <div className="flex">
               <button
                 onClick={() => setCurrentView('home')}
-                className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
+                className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? `border-[${PAL.borderDark}] text-white` : 'border-slate-200'}`}
               >
                 HOME
               </button>
-              <div className={`flex-1 border-r ${darkMode ? 'border-[#2a2a4a]' : 'border-slate-200'}`} />
+              <div className={`flex-1 border-r ${darkMode ? `border-[${PAL.borderDark}]` : 'border-slate-200'}`} />
               <button
                 onClick={() => { setCurrentTeamIndex(0); setCurrentView('album'); }}
                 className={`flex-1 py-4 font-black italic text-sm active:bg-slate-100 transition-colors ${darkMode ? 'text-white' : ''}`}
@@ -979,7 +788,7 @@ export default function PaniniAlbum2026() {
             <div className="hidden lg:flex justify-between items-center mb-8 gap-4">
               <button
                 onClick={() => currentTeam === 'FWCI1' ? setCurrentView('groups') : prevTeam()}
-                className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] text-white border border-[#3a3a5a]' : 'bg-white text-black'}`}
+                className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] text-white border border-[${PAL.borderDarkAlt}]` : 'bg-white text-black'}`}
               >
                 ← ANTERIOR
               </button>
@@ -1010,7 +819,7 @@ export default function PaniniAlbum2026() {
 
               <button
                 onClick={nextTeam}
-                className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] text-white border border-[#3a3a5a]' : 'bg-white text-black'}`}
+                className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] text-white border border-[${PAL.borderDarkAlt}]` : 'bg-white text-black'}`}
               >
                 {currentTeam === 'COCA' ? 'HOME' : 'SIGUIENTE →'}
               </button>
@@ -1032,10 +841,10 @@ export default function PaniniAlbum2026() {
               </div>
             </div>
 
-            <div className={`overflow-hidden rounded-[2rem] border-4 transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-200 bg-white'} grid lg:grid-cols-2`}>
+            <div className={`overflow-hidden rounded-[2rem] border-4 transition-colors duration-300 ${darkMode ? `border-[${PAL.borderDark}] bg-[${PAL.surfaceCardDark}]` : 'border-slate-200 bg-white'} grid lg:grid-cols-2`}>
               {currentTeam.startsWith('FWCH') ? (
                 <>
-                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a] bg-[#1e1e30]' : 'border-slate-300 bg-[#0d2167]'}`}>
+                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? `border-[${PAL.borderDark}] bg-[${PAL.surfaceCardDark}]` : `border-slate-300 bg-[${PAL.historyBg}]`}`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       <div className="col-span-4 hidden lg:block">
                         <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-white">
@@ -1054,7 +863,7 @@ export default function PaniniAlbum2026() {
                           return (
                             <div
                               key={`${currentTeam}-printed-left-${index}`}
-                              className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] transition-colors duration-300 ${darkMode ? 'border-slate-600 bg-[#2a2a4a] text-slate-400' : 'border-slate-300 bg-slate-200 text-slate-600'}`}
+                              className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] transition-colors duration-300 ${darkMode ? `border-slate-600 bg-[${PAL.borderDark}] text-slate-400` : 'border-slate-300 bg-slate-200 text-slate-600'}`}
                             >
                               <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
                                 {item.label}
@@ -1079,14 +888,14 @@ export default function PaniniAlbum2026() {
                     </div>
                   </div>
 
-                  <div className={`p-3 sm:p-8 transition-colors duration-300 ${darkMode ? 'bg-[#252535]' : 'bg-[#faf8f5]'}`}>
+                  <div className={`p-3 sm:p-8 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfacePanelDark}]` : `bg-[${PAL.historyPanelLight}]`}`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       {historyPageItems[currentTeam].slice(Math.ceil(historyPageItems[currentTeam].length / 2)).map((item, index) => {
                         if (item.type === 'printed') {
                           return (
                             <div
                               key={`${currentTeam}-printed-right-${index}`}
-                              className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] transition-colors duration-300 ${darkMode ? 'border-slate-600 bg-[#2a2a4a] text-slate-400' : 'border-slate-300 bg-slate-200 text-slate-600'}`}
+                              className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 w-full flex items-center justify-center text-center aspect-[3/2] transition-colors duration-300 ${darkMode ? `border-slate-600 bg-[${PAL.borderDark}] text-slate-400` : 'border-slate-300 bg-slate-200 text-slate-600'}`}
                             >
                               <div className="italic uppercase text-[10px] sm:text-sm mt-1 leading-tight font-black">
                                 {item.label}
@@ -1130,7 +939,7 @@ export default function PaniniAlbum2026() {
                     </div>
                   </div>
                   {/* Panel izquierdo - desktop */}
-                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a]' : 'border-slate-300'} ${getInnerPanelClass(currentTeam, darkMode)} hidden lg:block`}>
+                  <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? `border-[${PAL.borderDark}]` : 'border-slate-300'} ${getInnerPanelClass(currentTeam, darkMode)} hidden lg:block`}>
                     <div className="grid grid-cols-4 gap-2 sm:gap-4">
                       <div className="col-span-2">
                         <div className="text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words text-white">
@@ -1223,13 +1032,13 @@ export default function PaniniAlbum2026() {
                         <div
                           className="col-span-3 border-2 rounded-2xl p-2 flex flex-col justify-center"
                           style={darkMode
-                            ? { backgroundColor: '#2a2a4a', borderColor: '#475569' }
-                            : { backgroundColor: 'rgba(255,255,255,0.6)', borderColor: '#cbd5e1' }
+                            ? { backgroundColor: PAL.groupPanelBgDark, borderColor: PAL.groupPanelBorderDark }
+                            : { backgroundColor: PAL.groupPanelBgLight, borderColor: PAL.groupPanelBorderLight }
                           }
                         >
                           <div
                             className="font-black uppercase text-[11px] mb-1.5 tracking-widest text-center"
-                            style={{ color: darkMode ? '#e2e8f0' : grpColor }}
+                            style={{ color: darkMode ? PAL.groupPanelLabelDark : grpColor }}
                           >
                             GRUPO {grpKey}
                           </div>
@@ -1258,7 +1067,7 @@ export default function PaniniAlbum2026() {
                   </div>
                 </div>
               )}
-              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? 'border-[#2a2a4a]' : 'border-slate-300'} ${getInnerPanelClass(currentTeam, darkMode)} ${currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
+              <div className={`p-3 sm:p-8 border-b lg:border-b-0 lg:border-r transition-colors duration-300 ${darkMode ? `border-[${PAL.borderDark}]` : 'border-slate-300'} ${getInnerPanelClass(currentTeam, darkMode)} ${currentTeam !== 'COCA' ? 'hidden lg:block' : ''}`}>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                   <div className="col-span-2 hidden lg:block">
                     <div className={`text-3xl sm:text-5xl font-black uppercase leading-none mb-4 break-words ${currentTeam === 'COCA' ? 'text-black' : ''}`}>
@@ -1351,13 +1160,13 @@ export default function PaniniAlbum2026() {
                       <div
                         className="border-2 rounded-2xl p-2 h-full flex flex-col justify-center"
                         style={darkMode
-                          ? { backgroundColor: '#2a2a4a', borderColor: '#475569' }
-                          : { backgroundColor: 'rgba(255,255,255,0.6)', borderColor: '#cbd5e1' }
+                          ? { backgroundColor: PAL.groupPanelBgDark, borderColor: PAL.groupPanelBorderDark }
+                          : { backgroundColor: PAL.groupPanelBgLight, borderColor: PAL.groupPanelBorderLight }
                         }
                       >
                         <div
                           className="font-black uppercase text-[11px] mb-1.5 tracking-widest text-center"
-                          style={{ color: darkMode ? '#e2e8f0' : grpColor }}
+                          style={{ color: darkMode ? PAL.groupPanelLabelDark : grpColor }}
                         >
                           GRUPO {grpKey}
                         </div>
@@ -1393,17 +1202,17 @@ export default function PaniniAlbum2026() {
         )}
 
       {currentView === 'album' && (
-        <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? 'bg-[#1a1a2e] border-[#2a2a4a]' : 'bg-white border-slate-200'}`}>
+        <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] border-[${PAL.borderDark}]` : 'bg-white border-slate-200'}`}>
           <div className="flex">
             <button
               onClick={() => currentTeam === 'FWCI1' ? setCurrentView('groups') : prevTeam()}
-              className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
+              className={`flex-1 py-4 font-black italic text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? `border-[${PAL.borderDark}] text-white` : 'border-slate-200'}`}
             >
               ← ANTERIOR
             </button>
             <button
               onClick={() => setCurrentView('teams')}
-              className={`flex-1 py-4 font-black uppercase text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? 'border-[#2a2a4a] text-white' : 'border-slate-200'}`}
+              className={`flex-1 py-4 font-black uppercase text-sm border-r active:bg-slate-100 transition-colors ${darkMode ? `border-[${PAL.borderDark}] text-white` : 'border-slate-200'}`}
             >
               ÍNDICE
             </button>
@@ -1421,7 +1230,7 @@ export default function PaniniAlbum2026() {
 
       {showStats && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-          <div className={`rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md transition-colors duration-300 ${darkMode ? 'bg-[#1e1e30] text-white' : 'bg-white'}`}>
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
             <h3 className="text-2xl font-black italic uppercase mb-6">Estadísticas</h3>
             <div className="space-y-3 font-black">
               <div>Figuritas completadas: {completedCount} / {TOTAL_STICKERS}</div>
@@ -1510,20 +1319,20 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
   const isShieldSticker = sticker.type === 'shield';
 
   // empty → slate-300 (más visible), completed → green-400 (verde sólido), repeated → slate-400
-  const decorColor = sticker.repeated ? '#94a3b8' : sticker.completed ? '#4ade80' : '#cbd5e1';
+  const decorColor = sticker.repeated ? PAL.stickerDecorRepeated : sticker.completed ? PAL.stickerDecorCompleted : PAL.stickerDecorEmpty;
 
   const svgStyle = { position: 'absolute', top: '6%', left: '20%', width: '60%', opacity: 0.5, pointerEvents: 'none', zIndex: 0 };
 
   const repeatedBg = darkMode ? 'bg-slate-300 border-slate-400' : 'bg-slate-500 border-slate-500';
-  const emptyBg = darkMode ? 'bg-[#2a2a4a] border-slate-600' : 'bg-white border-slate-300';
+  const emptyBg = darkMode ? `bg-[${PAL.borderDark}] border-slate-600` : 'bg-white border-slate-300';
   const completedBg = darkMode ? 'bg-green-900 border-green-500' : 'bg-green-100 border-green-500';
 
   const repeatedCodeClass = darkMode ? 'text-slate-700 font-extrabold' : 'text-slate-100 font-extrabold';
   const repeatedLabelClass = darkMode ? 'text-slate-800 font-extrabold' : 'text-slate-100';
 
   const paniniStyle = sticker.code === '00' && !sticker.repeated ? {
-    background: 'linear-gradient(135deg, #c0c0c0, #f8f8f8, #a8a8a8, #e8e8e8, #c0c0c0)',
-    borderColor: '#a0a0a0'
+    background: PAL.paniniFoilGradient,
+    borderColor: PAL.paniniFoilBorder
   } : undefined;
 
   const animClass = justPasted ? 'sticker-paste' : highlighted ? 'sticker-pulse' : '';
@@ -1665,14 +1474,14 @@ function RepeatidasView() {
 
   if (!stickerData) {
     return (
-      <div className="min-h-screen bg-[#880E4F] flex items-center justify-center">
+      <div className={`min-h-screen bg-[${PAL.bgMain}] flex items-center justify-center`}>
         <div className="text-white font-black text-xl">Cargando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#880E4F]">
+    <div className={`min-h-screen bg-[${PAL.bgMain}]`}>
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <h1 className="text-lg font-black italic uppercase text-slate-800">
@@ -1796,9 +1605,9 @@ function CelebrationModal({ celebration, onClose }) {
     : theme?.gradient || 'from-emerald-500 to-green-600';
 
   const confettiColors = isAlbum
-    ? ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF8E53', '#FFEAA7', '#ffffff']
+    ? PAL.confettiAlbum
     : team === 'COCA'
-    ? ['#e41f1f', '#ff4444', '#ff6666', '#cc0000', '#ffffff', '#ffcccc']
+    ? PAL.confettiCoca
     : getTeamConfettiColors(team);
 
   const isDark = isAlbum || theme?.dark;
