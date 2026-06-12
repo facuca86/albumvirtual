@@ -622,6 +622,13 @@ export default function PaniniAlbum2026() {
                 } else if (proyecto.style === 'russia') {
                   btnStyle = { backgroundColor: PAL.projectStyles.russiaBg };
                   btnClass += ' text-white';
+                } else if (proyecto.style === 'brazil2014') {
+                  btnStyle = { backgroundColor: PAL.projectStyles.brazil2014Bg, color: PAL.projectStyles.brazil2014Text };
+                } else if (proyecto.style === 'southafrica2010') {
+                  btnStyle = { backgroundColor: PAL.projectStyles.southafrica2010Bg, color: PAL.projectStyles.southafrica2010Text, border: `2px solid ${PAL.projectStyles.southafrica2010Border}` };
+                } else if (proyecto.style === 'germany2006') {
+                  btnStyle = { backgroundColor: PAL.projectStyles.germany2006Bg, border: `2px solid ${PAL.projectStyles.germany2006Border}` };
+                  btnClass += ' text-white';
                 }
                 return (
                   <button
