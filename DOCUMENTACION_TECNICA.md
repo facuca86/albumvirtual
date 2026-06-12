@@ -354,7 +354,7 @@ Se agregó `albumConfig_2026.js` al pipeline de carga/transpilación, igual que 
 - **No se cambió** la estrategia de carga de Firebase desde `gstatic.com` (la que evita el error `Service firestore is not available`).
 
 ### 7.7 Nota: cuarto proyecto agregado a "Otros Proyectos"
-Como parte de esta migración, `proyectos` quedó con las **cuatro** entradas vigentes del estándar del proyecto: **Mundial 2026, Qatar 2022, CWC 2025 y Rusia 2018**. El JSX anterior solo listaba tres (faltaba 2018). Se agregó la entrada `paniniRussia2018` (`style: 'russia'`) y su tratamiento visual correspondiente en el bloque de estilos del componente (`backgroundColor: '#0E4CAC'`, texto blanco, sin borde especial), según el estándar descripto en la Sección 8.
+Como parte de esta migración, `proyectos` quedó con las **cuatro** entradas vigentes del estándar del proyecto: **Mundial 2026, Qatar 2022, CWC 2025 y Rusia 2018**. El JSX anterior solo listaba tres (faltaba 2018). Se agregó la entrada `paniniRussia2018` (`style: 'russia'`) y su tratamiento visual correspondiente en el bloque de estilos del componente (`backgroundColor: '#0E4CAC'`, texto blanco, borde blanco `2px solid #ffffff`), según el estándar descripto en la Sección 8.
 
 ### 7.8 Cómo verificar que nada se rompió
 1. **Persistencia:** `albumConfig.id` sigue siendo `paniniWorldCup2026` → las claves de Firestore (`albumProgress/paniniWorldCup2026`, `albumSettings/paniniWorldCup2026`) y de localStorage (`paniniWorldCup2026_stickers`, `paniniWorldCup2026_darkMode`) no cambian. El progreso existente se carga igual.
@@ -416,7 +416,8 @@ Cada estilo tiene su tratamiento visual definido en el JSX:
 | `multicolor` | `background: linear-gradient(135deg, #e53e3e, #dd6b20, #d69e2e, #38a169, #3182ce, #805ad5)`, texto blanco |
 | `qatar` | `backgroundColor: '#6B0F1A'`, `border: '2px solid #B8860B'`, texto blanco |
 | `cwc` | `backgroundColor: '#000000'`, `border: '2px solid #B8860B'`, texto dorado (`text-yellow-400`) |
-| `russia` | `backgroundColor: '#0E4CAC'`, texto blanco, sin borde especial |
+| `russia` | `backgroundColor: '#0E4CAC'`, `border: '2px solid #ffffff'` (borde blanco), texto blanco |
+| `brazil2014` | `backgroundColor: '#5FBFD8'`, texto verde oscuro `#2D7B2F`, `border: '2px solid #9BC43A'` (contorno fino verde) |
 
 Al agregar un nuevo álbum, definir un nuevo valor de `style` con su tratamiento visual representativo del torneo y agregarlo al bloque de estilos del componente.
 
@@ -443,7 +444,8 @@ Definir también el estilo visual del nuevo álbum en el bloque de estilos del c
     Mundial 2026: background: linear-gradient(135deg, #e53e3e, #dd6b20, #d69e2e, #38a169, #3182ce, #805ad5), texto blanco
     Qatar 2022: backgroundColor: '#6B0F1A', border: '2px solid #B8860B', texto blanco
     CWC 2025: backgroundColor: '#000000', border: '2px solid #B8860B', texto dorado (text-yellow-400)
-    Rusia 2018: backgroundColor: '#0E4CAC', texto blanco — sin borde especial
+    Rusia 2018: backgroundColor: '#0E4CAC', border: '2px solid #ffffff' (borde blanco), texto blanco
+    Brasil 2014: backgroundColor: '#5FBFD8', texto verde oscuro '#2D7B2F', border: '2px solid #9BC43A' (contorno fino verde)
 Los botones navegan en la misma pestaña: onClick={() => { window.location.href = proyecto.url; }}. El álbum actual se excluye automáticamente comparando proyecto.id con albumConfig.id. Aplicar este cambio en todos los repositorios existentes y crear un pull request en cada uno con título feat: agregar [nombre álbum] a otros proyectos.
 ```
 
