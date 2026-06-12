@@ -418,6 +418,8 @@ Cada estilo tiene su tratamiento visual definido en el JSX:
 | `cwc` | `backgroundColor: '#000000'`, `border: '2px solid #B8860B'`, texto dorado (`text-yellow-400`) |
 | `russia` | `backgroundColor: '#0E4CAC'`, `border: '2px solid #D52B1E'` (borde rojo), texto blanco |
 | `brazil2014` | `backgroundColor: '#5FBFD8'`, texto verde oscuro `#2D7B2F`, `border: '2px solid #9BC43A'` (contorno fino verde) |
+| `southafrica2010` | `backgroundColor: '#D6491F'`, texto crema `#F8E4B3`, `border: '2px solid #B92714'` |
+| `germany2006` | `backgroundColor: '#0A839C'`, `border: '2px solid #066F88'`, texto blanco |
 
 Al agregar un nuevo álbum, definir un nuevo valor de `style` con su tratamiento visual representativo del torneo y agregarlo al bloque de estilos del componente.
 
@@ -446,6 +448,8 @@ Definir también el estilo visual del nuevo álbum en el bloque de estilos del c
     CWC 2025: backgroundColor: '#000000', border: '2px solid #B8860B', texto dorado (text-yellow-400)
     Rusia 2018: backgroundColor: '#0E4CAC', border: '2px solid #D52B1E' (borde rojo), texto blanco
     Brasil 2014: backgroundColor: '#5FBFD8', texto verde oscuro '#2D7B2F', border: '2px solid #9BC43A' (contorno fino verde)
+    Sudáfrica 2010: backgroundColor: '#D6491F', texto crema '#F8E4B3', border: '2px solid #B92714'
+    Alemania 2006: backgroundColor: '#0A839C', border: '2px solid #066F88', texto blanco
 Los botones navegan en la misma pestaña: onClick={() => { window.location.href = proyecto.url; }}. El álbum actual se excluye automáticamente comparando proyecto.id con albumConfig.id. Aplicar este cambio en todos los repositorios existentes y crear un pull request en cada uno con título feat: agregar [nombre álbum] a otros proyectos.
 ```
 
