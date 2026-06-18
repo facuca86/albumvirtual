@@ -76,7 +76,7 @@ const TAILWIND_HEX = {
 function getTeamCodes(team) {
   if (team === 'FWCI1') return ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8'];
   if (team === 'FWCH1') return ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14'];
-  if (team === 'FWCH2') return ['FWC15','FWC16','FWC17','FWC18','FWC19','FWC20'];
+  if (team === 'FWCH2') return ['FWC15','FWC16','FWC17','FWC18','FWC19'];
   if (team === 'COCA') return Array.from({ length: 14 }, (_, i) => `CC${i + 1}`);
   return Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
 }
@@ -359,7 +359,7 @@ export default function PaniniAlbum2026() {
   const shieldCodes = teams
     .filter((team) => !team.startsWith('FWC') && team !== 'COCA')
     .map((team) => `${team}1`);
-  const fwcBrilliantCodes = Array.from({ length: STICKERS_TEAM }, (_, i) => `FWC${i + 1}`);
+  const fwcBrilliantCodes = Array.from({ length: STICKERS_FWCH + 8 }, (_, i) => `FWC${i + 1}`);
   const brilliantCodes = [...shieldCodes, ...fwcBrilliantCodes];
   const brilliantCompletedCount = brilliantCodes.filter((code) => isCompletedSticker(completed[code])).length;
 
@@ -436,17 +436,16 @@ export default function PaniniAlbum2026() {
 
     const fwchData = [
       { code:'FWC9', label:'ITALIA 1934', team:'FWCH1' },
-      { code:'FWC10', label:'URUGUAY 1950', team:'FWCH1' },
+      { code:'FWC10', label:'BRASIL 1950', team:'FWCH1' },
       { code:'FWC11', label:'RF ALEMANIA 1954', team:'FWCH1' },
-      { code:'FWC12', label:'BRASIL 1958', team:'FWCH1' },
-      { code:'FWC13', label:'BRASIL 1962', team:'FWCH1' },
-      { code:'FWC14', label:'RF ALEMANIA 1974', team:'FWCH1' },
-      { code:'FWC15', label:'ARGENTINA 1986', team:'FWCH2' },
-      { code:'FWC16', label:'BRASIL 1994', team:'FWCH2' },
-      { code:'FWC17', label:'BRASIL 2002', team:'FWCH2' },
-      { code:'FWC18', label:'ITALIA 2006', team:'FWCH2' },
-      { code:'FWC19', label:'ALEMANIA 2014', team:'FWCH2' },
-      { code:'FWC20', label:'ARGENTINA 2022', team:'FWCH2' },
+      { code:'FWC12', label:'BRASIL 1962', team:'FWCH1' },
+      { code:'FWC13', label:'RF ALEMANIA 1974', team:'FWCH1' },
+      { code:'FWC14', label:'ARGENTINA 1978', team:'FWCH1' },
+      { code:'FWC15', label:'BRASIL 1994', team:'FWCH2' },
+      { code:'FWC16', label:'BRASIL 2002', team:'FWCH2' },
+      { code:'FWC17', label:'ITALIA 2006', team:'FWCH2' },
+      { code:'FWC18', label:'ALEMANIA 2014', team:'FWCH2' },
+      { code:'FWC19', label:'ARGENTINA 2022', team:'FWCH2' },
     ];
     fwchData.forEach(d => entries.push({ ...d, teamName: 'FWC Historia', teamFlag: '⭐' }));
 
@@ -493,7 +492,7 @@ export default function PaniniAlbum2026() {
     ? ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => isCompletedSticker(completed[code])).length
     : currentTeam.startsWith('FWCH')
-    ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19','FWC20']
+    ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19']
         .filter((code) => isCompletedSticker(completed[code])).length
     : stickers.filter((s) => s.completed).length;
 
@@ -1466,7 +1465,7 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
               <div>Me faltan: {remainingCount}</div>
-              <div>Brillantes: {brilliantCompletedCount} / 68</div>
+              <div>Brillantes: {brilliantCompletedCount} / {brilliantCodes.length}</div>
               <div>Repetidas: {repeatedCount}</div>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -1585,10 +1584,10 @@ const FWC_LABELS = {
   '00': 'PANINI', FWC1: 'Logo Copa 1', FWC2: 'Logo Copa 2', FWC3: 'Mascotas',
   FWC4: 'Póster', FWC5: 'Balón Oficial', FWC6: 'Póster Canadá',
   FWC7: 'Póster México', FWC8: 'Póster USA',
-  FWC9: 'ITALIA 1934', FWC10: 'URUGUAY 1950', FWC11: 'RF ALEMANIA 1954',
-  FWC12: 'BRASIL 1958', FWC13: 'BRASIL 1962', FWC14: 'RF ALEMANIA 1974',
-  FWC15: 'ARGENTINA 1986', FWC16: 'BRASIL 1994', FWC17: 'BRASIL 2002',
-  FWC18: 'ITALIA 2006', FWC19: 'ALEMANIA 2014', FWC20: 'ARGENTINA 2022',
+  FWC9: 'ITALIA 1934', FWC10: 'BRASIL 1950', FWC11: 'RF ALEMANIA 1954',
+  FWC12: 'BRASIL 1962', FWC13: 'RF ALEMANIA 1974', FWC14: 'ARGENTINA 1978',
+  FWC15: 'BRASIL 1994', FWC16: 'BRASIL 2002', FWC17: 'ITALIA 2006',
+  FWC18: 'ALEMANIA 2014', FWC19: 'ARGENTINA 2022',
 };
 
 function getTeamForCode(code) {
