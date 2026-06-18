@@ -76,7 +76,7 @@ const TAILWIND_HEX = {
 function getTeamCodes(team) {
   if (team === 'FWCI1') return ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8'];
   if (team === 'FWCH1') return ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14'];
-  if (team === 'FWCH2') return ['FWC15','FWC16','FWC17','FWC18','FWC19','FWC20'];
+  if (team === 'FWCH2') return ['FWC15','FWC16','FWC17','FWC18','FWC19'];
   if (team === 'COCA') return Array.from({ length: 14 }, (_, i) => `CC${i + 1}`);
   return Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
 }
@@ -109,7 +109,8 @@ export default function PaniniAlbum2026() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [repetidasPending, setRepetidasPending] = useState({});
-  const [repetidasConfirmCode, setRepetidasConfirmCode] = useState(null);
+  const [repetidasSelected, setRepetidasSelected] = useState({});
+  const [repetidasConfirmSelected, setRepetidasConfirmSelected] = useState(false);
   const [repetidasConfirmSave, setRepetidasConfirmSave] = useState(false);
   const [repetidasConfirmExit, setRepetidasConfirmExit] = useState(false);
   const [showRepetidasQR, setShowRepetidasQR] = useState(false);
@@ -358,7 +359,7 @@ export default function PaniniAlbum2026() {
   const shieldCodes = teams
     .filter((team) => !team.startsWith('FWC') && team !== 'COCA')
     .map((team) => `${team}1`);
-  const fwcBrilliantCodes = Array.from({ length: STICKERS_TEAM }, (_, i) => `FWC${i + 1}`);
+  const fwcBrilliantCodes = Array.from({ length: STICKERS_FWCH + 8 }, (_, i) => `FWC${i + 1}`);
   const brilliantCodes = [...shieldCodes, ...fwcBrilliantCodes];
   const brilliantCompletedCount = brilliantCodes.filter((code) => isCompletedSticker(completed[code])).length;
 
@@ -435,17 +436,16 @@ export default function PaniniAlbum2026() {
 
     const fwchData = [
       { code:'FWC9', label:'ITALIA 1934', team:'FWCH1' },
-      { code:'FWC10', label:'URUGUAY 1950', team:'FWCH1' },
+      { code:'FWC10', label:'BRASIL 1950', team:'FWCH1' },
       { code:'FWC11', label:'RF ALEMANIA 1954', team:'FWCH1' },
-      { code:'FWC12', label:'BRASIL 1958', team:'FWCH1' },
-      { code:'FWC13', label:'BRASIL 1962', team:'FWCH1' },
-      { code:'FWC14', label:'RF ALEMANIA 1974', team:'FWCH1' },
-      { code:'FWC15', label:'ARGENTINA 1986', team:'FWCH2' },
-      { code:'FWC16', label:'BRASIL 1994', team:'FWCH2' },
-      { code:'FWC17', label:'BRASIL 2002', team:'FWCH2' },
-      { code:'FWC18', label:'ITALIA 2006', team:'FWCH2' },
-      { code:'FWC19', label:'ALEMANIA 2014', team:'FWCH2' },
-      { code:'FWC20', label:'ARGENTINA 2022', team:'FWCH2' },
+      { code:'FWC12', label:'BRASIL 1962', team:'FWCH1' },
+      { code:'FWC13', label:'RF ALEMANIA 1974', team:'FWCH1' },
+      { code:'FWC14', label:'ARGENTINA 1978', team:'FWCH1' },
+      { code:'FWC15', label:'BRASIL 1994', team:'FWCH2' },
+      { code:'FWC16', label:'BRASIL 2002', team:'FWCH2' },
+      { code:'FWC17', label:'ITALIA 2006', team:'FWCH2' },
+      { code:'FWC18', label:'ALEMANIA 2014', team:'FWCH2' },
+      { code:'FWC19', label:'ARGENTINA 2022', team:'FWCH2' },
     ];
     fwchData.forEach(d => entries.push({ ...d, teamName: 'FWC Historia', teamFlag: '⭐' }));
 
@@ -492,7 +492,7 @@ export default function PaniniAlbum2026() {
     ? ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8']
         .filter((code) => isCompletedSticker(completed[code])).length
     : currentTeam.startsWith('FWCH')
-    ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19','FWC20']
+    ? ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19']
         .filter((code) => isCompletedSticker(completed[code])).length
     : stickers.filter((s) => s.completed).length;
 
@@ -712,10 +712,14 @@ export default function PaniniAlbum2026() {
                         return (
                           <button
                             key={code}
-                            onClick={() => setRepetidasConfirmCode(code)}
-                            className="bg-slate-500 hover:bg-slate-600 text-white text-xs font-black px-2.5 py-1 rounded-lg active:scale-95 transition-all"
+                            onClick={() => setRepetidasSelected(prev => {
+                              const n = { ...prev };
+                              if (n[code]) delete n[code]; else n[code] = true;
+                              return n;
+                            })}
+                            className={`text-white text-xs font-black px-2.5 py-1 rounded-lg active:scale-95 transition-all ${repetidasSelected[code] ? 'bg-slate-800 ring-2 ring-white/40' : 'bg-slate-500 hover:bg-slate-600'}`}
                           >
-                            {code}{name !== code ? ` · ${name}` : ''}
+                            {repetidasSelected[code] ? '✓ ' : ''}{code}{name !== code ? ` · ${name}` : ''}
                           </button>
                         );
                       })}
@@ -726,11 +730,18 @@ export default function PaniniAlbum2026() {
             )}
             <div className={`mt-4 pt-4 border-t flex flex-wrap gap-3 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
               <button
+                onClick={() => Object.keys(repetidasSelected).length > 0 && setRepetidasConfirmSelected(true)}
+                disabled={Object.keys(repetidasSelected).length === 0}
+                className={`px-6 py-3 rounded-2xl font-black transition-colors ${Object.keys(repetidasSelected).length > 0 ? 'bg-orange-500 text-white' : darkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+              >
+                {Object.keys(repetidasSelected).length > 0 ? `CONFIRMAR (${Object.keys(repetidasSelected).length})` : 'NADA SELECCIONADO'}
+              </button>
+              <button
                 onClick={() => Object.keys(repetidasPending).length > 0 && setRepetidasConfirmSave(true)}
                 disabled={Object.keys(repetidasPending).length === 0}
                 className={`px-6 py-3 rounded-2xl font-black transition-colors ${Object.keys(repetidasPending).length > 0 ? 'bg-green-600 text-white' : darkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
               >
-                {Object.keys(repetidasPending).length > 0 ? `GUARDAR CAMBIOS (${Object.keys(repetidasPending).length})` : 'SIN CAMBIOS'}
+                {Object.keys(repetidasPending).length > 0 ? `GUARDAR (${Object.keys(repetidasPending).length})` : 'SIN CAMBIOS'}
               </button>
               <button
                 onClick={() => setShowRepetidasQR(true)}
@@ -740,7 +751,7 @@ export default function PaniniAlbum2026() {
               </button>
               <button
                 onClick={() => {
-                  if (Object.keys(repetidasPending).length > 0) {
+                  if (Object.keys(repetidasPending).length > 0 || Object.keys(repetidasSelected).length > 0) {
                     setRepetidasConfirmExit(true);
                   } else {
                     setCurrentView('home');
@@ -751,28 +762,28 @@ export default function PaniniAlbum2026() {
                 ← VOLVER
               </button>
             </div>
-            {repetidasConfirmCode && (() => {
-              const _t = getTeamForCode(repetidasConfirmCode);
-              const _n = getPlayerNameForCode(repetidasConfirmCode, _t);
+            {repetidasConfirmSelected && (() => {
+              const n = Object.keys(repetidasSelected).length;
               return (
                 <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
                   <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-sm ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
-                    <h3 className="text-xl font-black mb-3">¿Marcar como pegada?</h3>
+                    <h3 className="text-xl font-black mb-3">¿Marcar como pegadas?</h3>
                     <p className={`mb-5 text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      <strong>{repetidasConfirmCode}</strong>{_n !== repetidasConfirmCode ? ` · ${_n}` : ''} pasará de repetida (2) a pegada (1).
+                      {n} figurita{n !== 1 ? 's' : ''} pasará{n !== 1 ? 'n' : ''} de repetida{n !== 1 ? 's' : ''} (2) a pegada{n !== 1 ? 's' : ''} (1).
                     </p>
                     <div className="flex gap-3">
                       <button
                         onClick={() => {
-                          setRepetidasPending(prev => ({ ...prev, [repetidasConfirmCode]: true }));
-                          setRepetidasConfirmCode(null);
+                          setRepetidasPending(prev => ({ ...prev, ...repetidasSelected }));
+                          setRepetidasSelected({});
+                          setRepetidasConfirmSelected(false);
                         }}
                         className="flex-1 bg-green-600 text-white px-4 py-3 rounded-2xl font-black"
                       >
                         CONFIRMAR
                       </button>
                       <button
-                        onClick={() => setRepetidasConfirmCode(null)}
+                        onClick={() => setRepetidasConfirmSelected(false)}
                         className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
                       >
                         CANCELAR
@@ -830,6 +841,7 @@ export default function PaniniAlbum2026() {
                     <button
                       onClick={() => {
                         setRepetidasPending({});
+                        setRepetidasSelected({});
                         setRepetidasConfirmExit(false);
                         setCurrentView('home');
                       }}
@@ -1453,7 +1465,7 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
               <div>Me faltan: {remainingCount}</div>
-              <div>Brillantes: {brilliantCompletedCount} / 68</div>
+              <div>Brillantes: {brilliantCompletedCount} / {brilliantCodes.length}</div>
               <div>Repetidas: {repeatedCount}</div>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -1497,7 +1509,7 @@ export default function PaniniAlbum2026() {
         </div>
       )}
       {showQR && <QRModal onClose={() => setShowQR(false)} />}
-      {showRepetidasQR && <QRModal url={window.location.origin + window.location.pathname + '?view=repetidasusuario'} onClose={() => setShowRepetidasQR(false)} />}
+      {showRepetidasQR && <QRModal url={window.location.origin + window.location.pathname + '?view=repetidas'} onClose={() => setShowRepetidasQR(false)} />}
       {celebration && (
         <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
       )}
@@ -1572,10 +1584,10 @@ const FWC_LABELS = {
   '00': 'PANINI', FWC1: 'Logo Copa 1', FWC2: 'Logo Copa 2', FWC3: 'Mascotas',
   FWC4: 'Póster', FWC5: 'Balón Oficial', FWC6: 'Póster Canadá',
   FWC7: 'Póster México', FWC8: 'Póster USA',
-  FWC9: 'ITALIA 1934', FWC10: 'URUGUAY 1950', FWC11: 'RF ALEMANIA 1954',
-  FWC12: 'BRASIL 1958', FWC13: 'BRASIL 1962', FWC14: 'RF ALEMANIA 1974',
-  FWC15: 'ARGENTINA 1986', FWC16: 'BRASIL 1994', FWC17: 'BRASIL 2002',
-  FWC18: 'ITALIA 2006', FWC19: 'ALEMANIA 2014', FWC20: 'ARGENTINA 2022',
+  FWC9: 'ITALIA 1934', FWC10: 'BRASIL 1950', FWC11: 'RF ALEMANIA 1954',
+  FWC12: 'BRASIL 1962', FWC13: 'RF ALEMANIA 1974', FWC14: 'ARGENTINA 1978',
+  FWC15: 'BRASIL 1994', FWC16: 'BRASIL 2002', FWC17: 'ITALIA 2006',
+  FWC18: 'ALEMANIA 2014', FWC19: 'ARGENTINA 2022',
 };
 
 function getTeamForCode(code) {

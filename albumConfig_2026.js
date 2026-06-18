@@ -27,15 +27,15 @@ export const albumConfig = {
   localStorageDarkKey: 'paniniWorldCup2026_darkMode',
 
   // ── Conteos oficiales ──────────────────────────────────────────────────────
-  // Total de la colección oficial Panini = 981.
-  //   1 (PANINI) + 8 (FWC Intro) + 12 (FWC Historia) + 48×20 (selecciones) = 981
+  // Total de la colección oficial Panini = 980.
+  //   1 (PANINI) + 8 (FWC Intro) + 11 (FWC Historia) + 48×20 (selecciones) = 980
   // Coca-Cola (CC1–CC14) existe en el álbum pero NO cuenta en el total oficial.
-  totalStickers: 981,
+  totalStickers: 980,
   teamStickerCount: 20,
   counts: {
     team: 20,   // STICKERS_TEAM
     fwci: 9,    // STICKERS_FWCI  (PANINI + FWC1..FWC8, repartidos en FWCI1/FWCI2)
-    fwch: 12,   // STICKERS_FWCH  (FWC9..FWC20, repartidos en FWCH1/FWCH2)
+    fwch: 11,   // STICKERS_FWCH  (FWC9..FWC19, repartidos en FWCH1/FWCH2)
     coca: 14,   // STICKERS_COCA  (CC1..CC14, fuera del conteo oficial)
   },
 
@@ -225,53 +225,51 @@ export const albumConfig = {
     // `selectable` = solo los stickers seleccionables de esta página.
     FWCH1: {
       type: 'history',
-      stickerCount: 12,
+      stickerCount: 11,
       pageItems: [
         { type: 'printed', label: 'URUGUAY 1930' },
         { type: 'sticker', code: 'FWC9', label: 'ITALIA 1934' },
         { type: 'printed', label: 'ITALIA 1938' },
-        { type: 'sticker', code: 'FWC10', label: 'URUGUAY 1950' },
+        { type: 'sticker', code: 'FWC10', label: 'BRASIL 1950' },
         { type: 'sticker', code: 'FWC11', label: 'RF ALEMANIA 1954' },
-        { type: 'sticker', code: 'FWC12', label: 'BRASIL 1958' },
-        { type: 'sticker', code: 'FWC13', label: 'BRASIL 1962' },
+        { type: 'sticker', code: 'FWC12', label: 'BRASIL 1962' },
         { type: 'printed', label: 'INGLATERRA 1966' },
         { type: 'printed', label: 'BRASIL 1970' },
-        { type: 'sticker', code: 'FWC14', label: 'RF ALEMANIA 1974' },
+        { type: 'sticker', code: 'FWC13', label: 'RF ALEMANIA 1974' },
+        { type: 'sticker', code: 'FWC14', label: 'ARGENTINA 1978' },
       ],
       selectable: [
         { code: 'FWC9', label: 'ITALIA 1934' },
-        { code: 'FWC10', label: 'URUGUAY 1950' },
+        { code: 'FWC10', label: 'BRASIL 1950' },
         { code: 'FWC11', label: 'RF ALEMANIA 1954' },
-        { code: 'FWC12', label: 'BRASIL 1958' },
-        { code: 'FWC13', label: 'BRASIL 1962' },
-        { code: 'FWC14', label: 'RF ALEMANIA 1974' },
+        { code: 'FWC12', label: 'BRASIL 1962' },
+        { code: 'FWC13', label: 'RF ALEMANIA 1974' },
+        { code: 'FWC14', label: 'ARGENTINA 1978' },
       ],
     },
     // Historia — página 2.
     FWCH2: {
       type: 'history',
-      stickerCount: 12,
+      stickerCount: 11,
       pageItems: [
-        { type: 'printed', label: 'ARGENTINA 1978' },
         { type: 'printed', label: 'ITALIA 1982' },
-        { type: 'sticker', code: 'FWC15', label: 'ARGENTINA 1986' },
+        { type: 'printed', label: 'ARGENTINA 1986' },
         { type: 'printed', label: 'ALEMANIA 1990' },
-        { type: 'sticker', code: 'FWC16', label: 'BRASIL 1994' },
+        { type: 'sticker', code: 'FWC15', label: 'BRASIL 1994' },
         { type: 'printed', label: 'FRANCIA 1998' },
-        { type: 'sticker', code: 'FWC17', label: 'BRASIL 2002' },
-        { type: 'sticker', code: 'FWC18', label: 'ITALIA 2006' },
+        { type: 'sticker', code: 'FWC16', label: 'BRASIL 2002' },
+        { type: 'sticker', code: 'FWC17', label: 'ITALIA 2006' },
         { type: 'printed', label: 'ESPAÑA 2010' },
-        { type: 'sticker', code: 'FWC19', label: 'ALEMANIA 2014' },
+        { type: 'sticker', code: 'FWC18', label: 'ALEMANIA 2014' },
         { type: 'printed', label: 'FRANCIA 2018' },
-        { type: 'sticker', code: 'FWC20', label: 'ARGENTINA 2022' },
+        { type: 'sticker', code: 'FWC19', label: 'ARGENTINA 2022' },
       ],
       selectable: [
-        { code: 'FWC15', label: 'ARGENTINA 1986' },
-        { code: 'FWC16', label: 'BRASIL 1994' },
-        { code: 'FWC17', label: 'BRASIL 2002' },
-        { code: 'FWC18', label: 'ITALIA 2006' },
-        { code: 'FWC19', label: 'ALEMANIA 2014' },
-        { code: 'FWC20', label: 'ARGENTINA 2022' },
+        { code: 'FWC15', label: 'BRASIL 1994' },
+        { code: 'FWC16', label: 'BRASIL 2002' },
+        { code: 'FWC17', label: 'ITALIA 2006' },
+        { code: 'FWC18', label: 'ALEMANIA 2014' },
+        { code: 'FWC19', label: 'ARGENTINA 2022' },
       ],
     },
     // Coca-Cola — colección promocional (no cuenta en el total oficial).
