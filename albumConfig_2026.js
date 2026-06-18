@@ -20,8 +20,8 @@ export const albumConfig = {
   // prefijo en localStorage. NO debe cambiar: rompería la persistencia existente.
   id: 'paniniWorldCup2026',
   owner: 'Facundo',
-  title: 'ÁLBUM VIRTUAL 2026',
-  subtitle: 'FIFA WORLD CUP',
+  title: '🇺🇸🇨🇦🇲🇽 ÁLBUM VIRTUAL 2026',
+  subtitle: 'FIFA WORLD CUP 26 · CAN - USA - MEX',
   exportFileName: 'panini2026_backup.json',
   localStorageKey: 'paniniWorldCup2026_stickers',
   localStorageDarkKey: 'paniniWorldCup2026_darkMode',

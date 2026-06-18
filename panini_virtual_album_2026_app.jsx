@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { db, doc, getDoc, setDoc } from './firebase';
+import { db, doc, getDoc, setDoc, onSnapshot } from './firebase';
 import { playerNames } from './playerNames';
 import { teamThemes } from './teamThemes';
 import { albumConfig } from './albumConfig_2026';
@@ -92,6 +92,7 @@ function getTeamConfettiColors(teamCode) {
 
 export default function PaniniAlbum2026() {
   if (VIEW_PARAM === 'repetidas') return <RepeatidasView />;
+  if (VIEW_PARAM === 'repetidasusuario') return <RepeatidasUsuarioExternoView />;
   const [currentView, setCurrentView] = useState('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [completed, setCompleted] = useState({});
@@ -107,6 +108,11 @@ export default function PaniniAlbum2026() {
   const [highlightCode, setHighlightCode] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [repetidasPending, setRepetidasPending] = useState({});
+  const [repetidasConfirmCode, setRepetidasConfirmCode] = useState(null);
+  const [repetidasConfirmSave, setRepetidasConfirmSave] = useState(false);
+  const [repetidasConfirmExit, setRepetidasConfirmExit] = useState(false);
+  const [showRepetidasQR, setShowRepetidasQR] = useState(false);
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -406,6 +412,20 @@ export default function PaniniAlbum2026() {
     ];
   }, [completed, selectionTeams]);
 
+  const repetidasGrouped = useMemo(() => {
+    const byTeam = {};
+    for (const [code, value] of Object.entries(completed)) {
+      if (value !== 'repeated' || repetidasPending[code]) continue;
+      const team = getTeamForCode(code);
+      if (!team) continue;
+      if (!byTeam[team]) byTeam[team] = [];
+      byTeam[team].push(code);
+    }
+    return teams
+      .filter(t => byTeam[t])
+      .map(t => ({ team: t, info: teamData[t], codes: byTeam[t] }));
+  }, [completed, repetidasPending]);
+
   // Search index: all toggleable stickers with searchable text
   const searchIndex = useMemo(() => {
     const entries = [];
@@ -593,6 +613,15 @@ export default function PaniniAlbum2026() {
             </button>
 
             <button
+              onClick={() => setCurrentView('repetidas')}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
+            >
+              <div className="text-3xl font-black italic uppercase">
+                Repetidas
+              </div>
+            </button>
+
+            <button
               onClick={() => setCurrentView('otros-proyectos')}
               className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
             >
@@ -648,6 +677,176 @@ export default function PaniniAlbum2026() {
             >
               ← VOLVER
             </button>
+          </div>
+        )}
+
+        {currentView === 'repetidas' && (
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-2xl mx-auto transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+            <h2 className="text-3xl font-black italic uppercase mb-6">Repetidas</h2>
+            {repetidasGrouped.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">🙌</div>
+                <div className="font-black text-xl">¡No hay repetidas!</div>
+                <div className={`mt-2 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {Object.keys(repetidasPending).length > 0
+                    ? `${Object.keys(repetidasPending).length} cambio${Object.keys(repetidasPending).length !== 1 ? 's' : ''} pendiente${Object.keys(repetidasPending).length !== 1 ? 's' : ''} sin guardar`
+                    : 'Cuando tengas figuritas repetidas aparecerán acá.'}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-1 mb-4">
+                {repetidasGrouped.map(({ team, info, codes }) => (
+                  <div key={team} className={`rounded-2xl p-4 ${darkMode ? `bg-[${PAL.borderDark}]` : 'bg-slate-50'}`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl leading-none">{info?.flag || '🏳️'}</span>
+                      <div>
+                        <div className="font-black uppercase text-sm">{info?.name || team}</div>
+                        <div className={`text-[10px] uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+                          {codes.length} repetida{codes.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {codes.map(code => {
+                        const name = getPlayerNameForCode(code, team);
+                        return (
+                          <button
+                            key={code}
+                            onClick={() => setRepetidasConfirmCode(code)}
+                            className="bg-slate-500 hover:bg-slate-600 text-white text-xs font-black px-2.5 py-1 rounded-lg active:scale-95 transition-all"
+                          >
+                            {code}{name !== code ? ` · ${name}` : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className={`mt-4 pt-4 border-t flex flex-wrap gap-3 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+              <button
+                onClick={() => Object.keys(repetidasPending).length > 0 && setRepetidasConfirmSave(true)}
+                disabled={Object.keys(repetidasPending).length === 0}
+                className={`px-6 py-3 rounded-2xl font-black transition-colors ${Object.keys(repetidasPending).length > 0 ? 'bg-green-600 text-white' : darkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+              >
+                {Object.keys(repetidasPending).length > 0 ? `GUARDAR CAMBIOS (${Object.keys(repetidasPending).length})` : 'SIN CAMBIOS'}
+              </button>
+              <button
+                onClick={() => setShowRepetidasQR(true)}
+                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                COMPARTIR QR
+              </button>
+              <button
+                onClick={() => {
+                  if (Object.keys(repetidasPending).length > 0) {
+                    setRepetidasConfirmExit(true);
+                  } else {
+                    setCurrentView('home');
+                  }
+                }}
+                className={`px-6 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+              >
+                ← VOLVER
+              </button>
+            </div>
+            {repetidasConfirmCode && (() => {
+              const _t = getTeamForCode(repetidasConfirmCode);
+              const _n = getPlayerNameForCode(repetidasConfirmCode, _t);
+              return (
+                <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
+                  <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-sm ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+                    <h3 className="text-xl font-black mb-3">¿Marcar como pegada?</h3>
+                    <p className={`mb-5 text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      <strong>{repetidasConfirmCode}</strong>{_n !== repetidasConfirmCode ? ` · ${_n}` : ''} pasará de repetida (2) a pegada (1).
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setRepetidasPending(prev => ({ ...prev, [repetidasConfirmCode]: true }));
+                          setRepetidasConfirmCode(null);
+                        }}
+                        className="flex-1 bg-green-600 text-white px-4 py-3 rounded-2xl font-black"
+                      >
+                        CONFIRMAR
+                      </button>
+                      <button
+                        onClick={() => setRepetidasConfirmCode(null)}
+                        className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+                      >
+                        CANCELAR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+            {repetidasConfirmSave && (() => {
+              const n = Object.keys(repetidasPending).length;
+              return (
+                <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
+                  <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-sm ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+                    <h3 className="text-xl font-black mb-3">¿Confirmar cambios?</h3>
+                    <p className={`mb-5 text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      Se marcarán {n} figurita{n !== 1 ? 's' : ''} como pegada{n !== 1 ? 's' : ''}.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setCompleted(prev => {
+                            const next = { ...prev };
+                            for (const code of Object.keys(repetidasPending)) {
+                              next[code] = true;
+                            }
+                            return next;
+                          });
+                          setRepetidasPending({});
+                          setRepetidasConfirmSave(false);
+                        }}
+                        className="flex-1 bg-green-600 text-white px-4 py-3 rounded-2xl font-black"
+                      >
+                        CONFIRMAR
+                      </button>
+                      <button
+                        onClick={() => setRepetidasConfirmSave(false)}
+                        className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+                      >
+                        CANCELAR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+            {repetidasConfirmExit && (
+              <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
+                <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-sm ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+                  <h3 className="text-xl font-black mb-3">Cambios sin guardar</h3>
+                  <p className={`mb-5 text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Tenés cambios sin guardar. ¿Salir de todas formas?
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setRepetidasPending({});
+                        setRepetidasConfirmExit(false);
+                        setCurrentView('home');
+                      }}
+                      className="flex-1 bg-red-600 text-white px-4 py-3 rounded-2xl font-black"
+                    >
+                      SALIR
+                    </button>
+                    <button
+                      onClick={() => setRepetidasConfirmExit(false)}
+                      className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+                    >
+                      CANCELAR
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1288,12 +1487,6 @@ export default function PaniniAlbum2026() {
                 Estadísticas Selecciones
               </button>
               <button
-                onClick={() => setShowQR(true)}
-                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
-              >
-                Generar QR
-              </button>
-              <button
                 onClick={() => setShowStats(false)}
                 className={`px-6 py-3 rounded-2xl font-black ${darkMode ? 'bg-slate-600 text-white' : 'bg-slate-300 text-slate-800'}`}
               >
@@ -1304,6 +1497,7 @@ export default function PaniniAlbum2026() {
         </div>
       )}
       {showQR && <QRModal onClose={() => setShowQR(false)} />}
+      {showRepetidasQR && <QRModal url={window.location.origin + window.location.pathname + '?view=repetidasusuario'} onClose={() => setShowRepetidasQR(false)} />}
       {celebration && (
         <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
       )}
@@ -1414,13 +1608,13 @@ function getPlayerNameForCode(code, team) {
   return code;
 }
 
-function QRModal({ onClose }) {
+function QRModal({ onClose, url }) {
   const qrRef = useRef(null);
-  const url = window.location.origin + window.location.pathname + '?view=repetidas';
+  const qrUrl = url || (window.location.origin + window.location.pathname + '?view=repetidas');
 
   useEffect(() => {
     if (qrRef.current && window.QRCode) {
-      new window.QRCode(qrRef.current, { text: url, width: 200, height: 200 });
+      new window.QRCode(qrRef.current, { text: qrUrl, width: 200, height: 200 });
     }
   }, []);
 
@@ -1429,7 +1623,7 @@ function QRModal({ onClose }) {
       <div className="bg-white rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs w-full">
         <h3 className="text-lg font-black italic uppercase">Figuritas Repetidas</h3>
         <div ref={qrRef} />
-        <p className="text-xs text-slate-400 text-center break-all">{url}</p>
+        <p className="text-xs text-slate-400 text-center break-all">{qrUrl}</p>
         <button
           onClick={onClose}
           className="bg-red-600 text-white px-6 py-3 rounded-2xl font-black w-full"
@@ -1530,6 +1724,89 @@ function RepeatidasView() {
           </div>
         ))}
       </main>
+    </div>
+  );
+}
+
+function RepeatidasUsuarioExternoView() {
+  const [stickerData, setStickerData] = useState(null);
+
+  useEffect(() => {
+    if (progressDocRef) {
+      const unsub = onSnapshot(progressDocRef, (snap) => {
+        setStickerData(snap.exists() ? (snap.data()?.stickers || {}) : {});
+      }, () => {
+        const local = localStorage.getItem(LOCAL_STORAGE_KEY);
+        setStickerData(local ? JSON.parse(local) : {});
+      });
+      return unsub;
+    }
+    const local = localStorage.getItem(LOCAL_STORAGE_KEY);
+    setStickerData(local ? JSON.parse(local) : {});
+  }, []);
+
+  const grouped = useMemo(() => {
+    if (!stickerData) return [];
+    const byTeam = {};
+    for (const [code, value] of Object.entries(stickerData)) {
+      if (value !== 'repeated') continue;
+      const team = getTeamForCode(code);
+      if (!team) continue;
+      if (!byTeam[team]) byTeam[team] = [];
+      byTeam[team].push(code);
+    }
+    return teams
+      .filter(t => byTeam[t])
+      .map(t => ({ team: t, info: teamData[t], codes: byTeam[t] }));
+  }, [stickerData]);
+
+  if (!stickerData) {
+    return (
+      <div className={`min-h-screen bg-[${PAL.bgMain}] flex items-center justify-center`}>
+        <div className="text-white font-black text-xl">Cargando...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`min-h-screen bg-[${PAL.bgMain}]`}>
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-black italic uppercase text-white">FIGURITAS REPETIDAS</h1>
+          <p className="text-sm text-slate-300 uppercase tracking-widest mt-1">{albumConfig.title}</p>
+        </div>
+        {grouped.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 text-center text-slate-800">
+            <div className="text-4xl mb-3">🙌</div>
+            <div className="font-black text-xl">¡No hay repetidas!</div>
+            <div className="text-slate-500 mt-2 text-sm">
+              No hay figuritas repetidas disponibles.
+            </div>
+          </div>
+        ) : grouped.map(({ team, info, codes }) => (
+          <div key={team} className="bg-white rounded-2xl p-4 shadow mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl leading-none">{info?.flag || '🏳️'}</span>
+              <div>
+                <div className="font-black uppercase text-sm text-slate-800">{info?.name || team}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  {codes.length} repetida{codes.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {codes.map(code => {
+                const name = getPlayerNameForCode(code, team);
+                return (
+                  <span key={code} className="bg-slate-500 text-white text-xs font-black px-2.5 py-1 rounded-lg">
+                    {code}{name !== code ? ` · ${name}` : ''}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
