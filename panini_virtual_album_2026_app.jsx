@@ -114,6 +114,7 @@ export default function PaniniAlbum2026() {
   const [repetidasConfirmSave, setRepetidasConfirmSave] = useState(false);
   const [repetidasConfirmExit, setRepetidasConfirmExit] = useState(false);
   const [showRepetidasQR, setShowRepetidasQR] = useState(false);
+  const [showExportText, setShowExportText] = useState(false);
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -744,6 +745,13 @@ export default function PaniniAlbum2026() {
                 {Object.keys(repetidasPending).length > 0 ? `GUARDAR (${Object.keys(repetidasPending).length})` : 'SIN CAMBIOS'}
               </button>
               <button
+                onClick={() => setShowExportText(true)}
+                disabled={repetidasGrouped.length === 0}
+                className={`px-6 py-3 rounded-2xl font-black transition-colors ${repetidasGrouped.length > 0 ? 'bg-blue-600 text-white' : darkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+              >
+                EXPORTAR TEXTO
+              </button>
+              <button
                 onClick={() => setShowRepetidasQR(true)}
                 className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
               >
@@ -859,6 +867,49 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
             )}
+            {showExportText && (() => {
+              const lines = repetidasGrouped.map(({ team, info, codes }) => {
+                const flag = info?.flag || '';
+                const name = info?.name || team;
+                const stickers = codes.map(code => {
+                  const n = getPlayerNameForCode(code, team);
+                  return n !== code ? `${code} (${n})` : code;
+                }).join(', ');
+                return `${flag} ${name}: ${stickers}`;
+              });
+              const text = `Figuritas repetidas de ${ALBUM_OWNER} - FIFA World Cup 2026\n\n${lines.join('\n')}`;
+              return (
+                <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
+                  <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-lg ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+                    <h3 className="text-xl font-black mb-1">Exportar repetidas</h3>
+                    <p className={`text-xs mb-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Copiá el texto para pegarlo en WhatsApp o un correo
+                    </p>
+                    <textarea
+                      readOnly
+                      value={text}
+                      rows={Math.min(lines.length + 3, 14)}
+                      onClick={e => e.target.select()}
+                      className={`w-full rounded-2xl p-4 text-sm font-mono resize-none border outline-none ${darkMode ? 'bg-slate-800 text-white border-slate-600' : 'bg-slate-50 text-slate-800 border-slate-200'}`}
+                    />
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(text)}
+                        className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-2xl font-black"
+                      >
+                        COPIAR
+                      </button>
+                      <button
+                        onClick={() => setShowExportText(false)}
+                        className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+                      >
+                        CERRAR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
