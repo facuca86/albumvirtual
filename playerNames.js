@@ -103,7 +103,7 @@ MEX: {
 },
   CAN: {
   2: "Dayne St. Clair",
-  2: "Alphonso Davies",
+  3: "Alphonso Davies",
   4: "Alistair Johnston",
   5: "Samuel Adekugbe",
   6: "Richie Laryea",
