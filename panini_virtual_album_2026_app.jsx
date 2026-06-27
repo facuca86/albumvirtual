@@ -113,6 +113,7 @@ export default function PaniniAlbum2026() {
   const [repetidasConfirmSelected, setRepetidasConfirmSelected] = useState(false);
   const [repetidasConfirmSave, setRepetidasConfirmSave] = useState(false);
   const [repetidasConfirmExit, setRepetidasConfirmExit] = useState(false);
+  const [repetidasConfirmLimpiar, setRepetidasConfirmLimpiar] = useState(false);
   const [showRepetidasQR, setShowRepetidasQR] = useState(false);
   const [showExportText, setShowExportText] = useState(false);
 
@@ -758,6 +759,13 @@ export default function PaniniAlbum2026() {
                 COMPARTIR QR
               </button>
               <button
+                onClick={() => repetidasGrouped.length > 0 && setRepetidasConfirmLimpiar(true)}
+                disabled={repetidasGrouped.length === 0}
+                className={`px-6 py-3 rounded-2xl font-black transition-colors ${repetidasGrouped.length > 0 ? 'bg-red-600 text-white' : darkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+              >
+                LIMPIAR REPETIDAS
+              </button>
+              <button
                 onClick={() => {
                   if (Object.keys(repetidasPending).length > 0 || Object.keys(repetidasSelected).length > 0) {
                     setRepetidasConfirmExit(true);
@@ -867,6 +875,44 @@ export default function PaniniAlbum2026() {
                 </div>
               </div>
             )}
+            {repetidasConfirmLimpiar && (() => {
+              const totalRepetidas = Object.values(completed).filter(v => v === 'repeated').length;
+              return (
+                <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
+                  <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-sm ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+                    <h3 className="text-xl font-black mb-3">¿Limpiar repetidas?</h3>
+                    <p className={`mb-5 text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      {totalRepetidas} figurita{totalRepetidas !== 1 ? 's' : ''} repetida{totalRepetidas !== 1 ? 's' : ''} volverá{totalRepetidas !== 1 ? 'n' : ''} a estado pegado (1). Esta acción no se puede deshacer.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setCompleted(prev => {
+                            const next = { ...prev };
+                            for (const code of Object.keys(next)) {
+                              if (next[code] === 'repeated') next[code] = true;
+                            }
+                            return next;
+                          });
+                          setRepetidasPending({});
+                          setRepetidasSelected({});
+                          setRepetidasConfirmLimpiar(false);
+                        }}
+                        className="flex-1 bg-red-600 text-white px-4 py-3 rounded-2xl font-black"
+                      >
+                        LIMPIAR
+                      </button>
+                      <button
+                        onClick={() => setRepetidasConfirmLimpiar(false)}
+                        className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+                      >
+                        CANCELAR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
             {showExportText && (() => {
               const lines = repetidasGrouped.map(({ team, info, codes }) => {
                 const flag = info?.flag || '';
