@@ -93,6 +93,7 @@ function getTeamConfettiColors(teamCode) {
 export default function PaniniAlbum2026() {
   if (VIEW_PARAM === 'repetidas') return <RepeatidasView />;
   if (VIEW_PARAM === 'repetidasusuario') return <RepeatidasUsuarioExternoView />;
+  if (VIEW_PARAM === 'faltan') return <FaltanView />;
   const [currentView, setCurrentView] = useState('home');
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [completed, setCompleted] = useState({});
@@ -116,6 +117,8 @@ export default function PaniniAlbum2026() {
   const [repetidasConfirmLimpiar, setRepetidasConfirmLimpiar] = useState(false);
   const [showRepetidasQR, setShowRepetidasQR] = useState(false);
   const [showExportText, setShowExportText] = useState(false);
+  const [showFaltanQR, setShowFaltanQR] = useState(false);
+  const [showExportTextFaltan, setShowExportTextFaltan] = useState(false);
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -429,6 +432,17 @@ export default function PaniniAlbum2026() {
       .map(t => ({ team: t, info: teamData[t], codes: byTeam[t] }));
   }, [completed, repetidasPending]);
 
+  const faltantesGrouped = useMemo(() => {
+    const byTeam = {};
+    for (const team of teams) {
+      const missing = getTeamCodes(team).filter((code) => !isCompletedSticker(completed[code]));
+      if (missing.length) byTeam[team] = missing;
+    }
+    return teams
+      .filter(t => byTeam[t])
+      .map(t => ({ team: t, info: teamData[t], codes: byTeam[t] }));
+  }, [completed]);
+
   // Search index: all toggleable stickers with searchable text
   const searchIndex = useMemo(() => {
     const entries = [];
@@ -620,6 +634,15 @@ export default function PaniniAlbum2026() {
             >
               <div className="text-3xl font-black italic uppercase">
                 Repetidas
+              </div>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('faltan')}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
+            >
+              <div className="text-3xl font-black italic uppercase">
+                Me Faltan
               </div>
             </button>
 
@@ -947,6 +970,114 @@ export default function PaniniAlbum2026() {
                       </button>
                       <button
                         onClick={() => setShowExportText(false)}
+                        className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+                      >
+                        CERRAR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {currentView === 'faltan' && (
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-2xl mx-auto transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+            <h2 className="text-3xl font-black italic uppercase mb-6">Me Faltan</h2>
+            {faltantesGrouped.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">🏆</div>
+                <div className="font-black text-xl">¡Álbum completo!</div>
+                <div className={`mt-2 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Ya tenés todas las figuritas.
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-1 mb-4">
+                {faltantesGrouped.map(({ team, info, codes }) => (
+                  <div key={team} className={`rounded-2xl p-4 ${darkMode ? `bg-[${PAL.borderDark}]` : 'bg-slate-50'}`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-2xl leading-none">{info?.flag || '🏳️'}</span>
+                      <div>
+                        <div className="font-black uppercase text-sm">{info?.name || team}</div>
+                        <div className={`text-[10px] uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+                          {codes.length} falta{codes.length !== 1 ? 'n' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {codes.map(code => {
+                        const name = getPlayerNameForCode(code, team);
+                        return (
+                          <span
+                            key={code}
+                            className="bg-slate-500 text-white text-xs font-black px-2.5 py-1 rounded-lg"
+                          >
+                            {code}{name !== code ? ` · ${name}` : ''}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className={`mt-4 pt-4 border-t flex flex-wrap gap-3 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+              <button
+                onClick={() => setShowExportTextFaltan(true)}
+                disabled={faltantesGrouped.length === 0}
+                className={`px-6 py-3 rounded-2xl font-black transition-colors ${faltantesGrouped.length > 0 ? 'bg-blue-600 text-white' : darkMode ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+              >
+                EXPORTAR TEXTO
+              </button>
+              <button
+                onClick={() => setShowFaltanQR(true)}
+                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                COMPARTIR QR
+              </button>
+              <button
+                onClick={() => setCurrentView('home')}
+                className={`px-6 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
+              >
+                ← VOLVER
+              </button>
+            </div>
+            {showExportTextFaltan && (() => {
+              const lines = faltantesGrouped.map(({ team, info, codes }) => {
+                const flag = info?.flag || '';
+                const name = info?.name || team;
+                const stickers = codes.map(code => {
+                  const n = getPlayerNameForCode(code, team);
+                  return n !== code ? `${code} (${n})` : code;
+                }).join(', ');
+                return `${flag} ${name}: ${stickers}`;
+              });
+              const text = `Figuritas que le faltan a ${ALBUM_OWNER} - FIFA World Cup 2026\n\n${lines.join('\n')}`;
+              return (
+                <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
+                  <div className={`rounded-3xl p-6 shadow-2xl w-full max-w-lg ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+                    <h3 className="text-xl font-black mb-1">Exportar faltantes</h3>
+                    <p className={`text-xs mb-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Copiá el texto para pegarlo en WhatsApp o un correo
+                    </p>
+                    <textarea
+                      readOnly
+                      value={text}
+                      rows={Math.min(lines.length + 3, 14)}
+                      onClick={e => e.target.select()}
+                      className={`w-full rounded-2xl p-4 text-sm font-mono resize-none border outline-none ${darkMode ? 'bg-slate-800 text-white border-slate-600' : 'bg-slate-50 text-slate-800 border-slate-200'}`}
+                    />
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(text)}
+                        className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-2xl font-black"
+                      >
+                        COPIAR
+                      </button>
+                      <button
+                        onClick={() => setShowExportTextFaltan(false)}
                         className={`flex-1 px-4 py-3 rounded-2xl font-black ${darkMode ? `bg-[${PAL.borderDark}] text-white` : 'bg-slate-200 text-slate-800'}`}
                       >
                         CERRAR
@@ -1607,6 +1738,7 @@ export default function PaniniAlbum2026() {
       )}
       {showQR && <QRModal onClose={() => setShowQR(false)} />}
       {showRepetidasQR && <QRModal url={window.location.origin + window.location.pathname + '?view=repetidas'} onClose={() => setShowRepetidasQR(false)} />}
+      {showFaltanQR && <QRModal url={window.location.origin + window.location.pathname + '?view=faltan'} onClose={() => setShowFaltanQR(false)} />}
       {celebration && (
         <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
       )}
@@ -1916,6 +2048,99 @@ function RepeatidasUsuarioExternoView() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function FaltanView() {
+  const [stickerData, setStickerData] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (progressDocRef) {
+          const snap = await getDoc(progressDocRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            setStickerData(data?.stickers || {});
+            return;
+          }
+        }
+        const local = localStorage.getItem(LOCAL_STORAGE_KEY);
+        setStickerData(local ? JSON.parse(local) : {});
+      } catch {
+        setStickerData({});
+      }
+    };
+    load();
+  }, []);
+
+  const grouped = useMemo(() => {
+    if (!stickerData) return [];
+    const byTeam = {};
+    for (const team of teams) {
+      const missing = getTeamCodes(team).filter((code) => {
+        const v = stickerData[code];
+        return v !== true && v !== 'repeated';
+      });
+      if (missing.length) byTeam[team] = missing;
+    }
+    return teams
+      .filter(t => byTeam[t])
+      .map(t => ({ team: t, info: teamData[t], codes: byTeam[t] }));
+  }, [stickerData]);
+
+  if (!stickerData) {
+    return (
+      <div className={`min-h-screen bg-[${PAL.bgMain}] flex items-center justify-center`}>
+        <div className="text-white font-black text-xl">Cargando...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`min-h-screen bg-[${PAL.bgMain}]`}>
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <h1 className="text-lg font-black italic uppercase text-slate-800">
+            Figuritas que le faltan a {ALBUM_OWNER}
+          </h1>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest">FIFA World Cup 2026</p>
+        </div>
+      </header>
+      <main className="max-w-2xl mx-auto px-4 py-5 space-y-3">
+        {grouped.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 text-center text-slate-800">
+            <div className="text-4xl mb-3">🏆</div>
+            <div className="font-black text-xl">¡Álbum completo!</div>
+            <div className="text-slate-500 mt-2 text-sm">
+              Ya tiene todas las figuritas.
+            </div>
+          </div>
+        ) : grouped.map(({ team, info, codes }) => (
+          <div key={team} className="bg-white rounded-2xl p-4 shadow">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl leading-none">{info?.flag || '🏳️'}</span>
+              <div>
+                <div className="font-black uppercase text-sm text-slate-800">{info?.name || team}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  {codes.length} falta{codes.length !== 1 ? 'n' : ''}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {codes.map(code => {
+                const name = getPlayerNameForCode(code, team);
+                return (
+                  <span key={code} className="bg-slate-500 text-white text-xs font-black px-2.5 py-1 rounded-lg">
+                    {code}{name !== code ? ` · ${name}` : ''}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </main>
     </div>
   );
 }
