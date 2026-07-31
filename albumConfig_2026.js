@@ -236,7 +236,7 @@ export const albumConfig = {
         { type: 'printed', label: 'INGLATERRA 1966' },
         { type: 'printed', label: 'BRASIL 1970' },
         { type: 'sticker', code: 'FWC13', label: 'RF ALEMANIA 1974' },
-        { type: 'sticker', code: 'FWC14', label: 'ARGENTINA 1978' },
+        { type: 'printed', label: 'ARGENTINA 1978' },
       ],
       selectable: [
         { code: 'FWC9', label: 'ITALIA 1934' },
@@ -244,7 +244,6 @@ export const albumConfig = {
         { code: 'FWC11', label: 'RF ALEMANIA 1954' },
         { code: 'FWC12', label: 'BRASIL 1962' },
         { code: 'FWC13', label: 'RF ALEMANIA 1974' },
-        { code: 'FWC14', label: 'ARGENTINA 1978' },
       ],
     },
     // Historia — página 2.
@@ -253,7 +252,7 @@ export const albumConfig = {
       stickerCount: 11,
       pageItems: [
         { type: 'printed', label: 'ITALIA 1982' },
-        { type: 'printed', label: 'ARGENTINA 1986' },
+        { type: 'sticker', code: 'FWC14', label: 'ARGENTINA 1986' },
         { type: 'printed', label: 'ALEMANIA 1990' },
         { type: 'sticker', code: 'FWC15', label: 'BRASIL 1994' },
         { type: 'printed', label: 'FRANCIA 1998' },
@@ -265,6 +264,7 @@ export const albumConfig = {
         { type: 'sticker', code: 'FWC19', label: 'ARGENTINA 2022' },
       ],
       selectable: [
+        { code: 'FWC14', label: 'ARGENTINA 1986' },
         { code: 'FWC15', label: 'BRASIL 1994' },
         { code: 'FWC16', label: 'BRASIL 2002' },
         { code: 'FWC17', label: 'ITALIA 2006' },
