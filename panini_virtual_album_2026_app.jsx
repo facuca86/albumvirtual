@@ -75,8 +75,8 @@ const TAILWIND_HEX = {
 
 function getTeamCodes(team) {
   if (team === 'FWCI1') return ['00','FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8'];
-  if (team === 'FWCH1') return ['FWC9','FWC10','FWC11','FWC12','FWC13','FWC14'];
-  if (team === 'FWCH2') return ['FWC15','FWC16','FWC17','FWC18','FWC19'];
+  if (team === 'FWCH1') return ['FWC9','FWC10','FWC11','FWC12','FWC13'];
+  if (team === 'FWCH2') return ['FWC14','FWC15','FWC16','FWC17','FWC18','FWC19'];
   if (team === 'COCA') return Array.from({ length: 14 }, (_, i) => `CC${i + 1}`);
   return Array.from({ length: 20 }, (_, i) => `${team}${i + 1}`);
 }
@@ -456,7 +456,7 @@ export default function PaniniAlbum2026() {
       { code:'FWC11', label:'RF ALEMANIA 1954', team:'FWCH1' },
       { code:'FWC12', label:'BRASIL 1962', team:'FWCH1' },
       { code:'FWC13', label:'RF ALEMANIA 1974', team:'FWCH1' },
-      { code:'FWC14', label:'ARGENTINA 1978', team:'FWCH1' },
+      { code:'FWC14', label:'ARGENTINA 1986', team:'FWCH2' },
       { code:'FWC15', label:'BRASIL 1994', team:'FWCH2' },
       { code:'FWC16', label:'BRASIL 2002', team:'FWCH2' },
       { code:'FWC17', label:'ITALIA 2006', team:'FWCH2' },
@@ -1814,7 +1814,7 @@ const FWC_LABELS = {
   FWC4: 'Póster', FWC5: 'Balón Oficial', FWC6: 'Póster Canadá',
   FWC7: 'Póster México', FWC8: 'Póster USA',
   FWC9: 'ITALIA 1934', FWC10: 'BRASIL 1950', FWC11: 'RF ALEMANIA 1954',
-  FWC12: 'BRASIL 1962', FWC13: 'RF ALEMANIA 1974', FWC14: 'ARGENTINA 1978',
+  FWC12: 'BRASIL 1962', FWC13: 'RF ALEMANIA 1974', FWC14: 'ARGENTINA 1986',
   FWC15: 'BRASIL 1994', FWC16: 'BRASIL 2002', FWC17: 'ITALIA 2006',
   FWC18: 'ALEMANIA 2014', FWC19: 'ARGENTINA 2022',
 };
@@ -1825,7 +1825,7 @@ function getTeamForCode(code) {
   if (fwcMatch) {
     const n = parseInt(fwcMatch[1]);
     if (n <= 8) return 'FWCI1';
-    if (n <= 14) return 'FWCH1';
+    if (n <= 13) return 'FWCH1';
     return 'FWCH2';
   }
   if (code.startsWith('CC')) return 'COCA';
