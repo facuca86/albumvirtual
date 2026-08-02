@@ -95,7 +95,7 @@ MEX: {
   12: "Tomáš Souček",
   14: "Pavel Šulc",
   15: "Matěj Vydra",
-  16: "Václav Černý",
+  16: "Vasil Kusej",
   17: "Tomáš Chorý",
   18: "Vladimír Černý",
   19: "Adam Hložek",
