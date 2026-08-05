@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { db, doc, getDoc, setDoc, onSnapshot } from './firebase';
+import { db, doc, getDoc, setDoc, onSnapshot, arrayUnion } from './firebase';
 import { playerNames } from './playerNames';
 import { teamThemes } from './teamThemes';
 import { albumConfig } from './albumConfig_2026';
@@ -11,6 +11,7 @@ const ALBUM_ID = albumConfig.id;
 
 const LOCAL_STORAGE_KEY = albumConfig.localStorageKey;
 const LOCAL_STORAGE_DARK_KEY = albumConfig.localStorageDarkKey;
+const LOCAL_STORAGE_HISTORY_KEY = `${ALBUM_ID}_progressHistory`;
 
 const PROYECTOS = albumConfig.proyectos;
 const PAL = albumConfig.palette;
@@ -38,6 +39,39 @@ const indexTeamIcons = albumConfig.indexTeamIcons;
 
 const progressDocRef = db ? doc(db, 'albumProgress', ALBUM_ID) : null;
 const settingsDocRef = db ? doc(db, 'albumSettings', ALBUM_ID) : null;
+const progressHistoryDocRef = db ? doc(db, 'albumProgressHistory', ALBUM_ID) : null;
+
+const formatDateTime = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// Entradas guardadas antes de que existieran id/timestamp (versión previa de handleMarkProgress)
+// reciben acá un id/timestamp derivado, de forma determinística, para no perderlas al mergear.
+const parseDateLabel = (label) => {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/.exec(label || '');
+  if (!m) return null;
+  const [, d, mo, y, h, mi] = m;
+  return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi)).getTime();
+};
+
+const normalizeHistoryEntry = (entry) => {
+  if (!entry || (entry.id && entry.timestamp)) return entry;
+  return {
+    ...entry,
+    id: entry.id ?? `legacy-${entry.dateLabel}-${entry.completedCount}-${entry.remainingCount}`,
+    timestamp: entry.timestamp ?? parseDateLabel(entry.dateLabel) ?? 0,
+  };
+};
+
+const mergeHistoryEntries = (...lists) => {
+  const byId = new Map();
+  for (const raw of lists.flat()) {
+    const entry = normalizeHistoryEntry(raw);
+    if (entry && entry.id) byId.set(entry.id, entry);
+  }
+  return [...byId.values()].sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
+};
 
 const getThemeKey = (teamCode) => {
   if (teamCode && teamCode.startsWith('FWCI')) return 'FWCINTRO';
@@ -119,6 +153,9 @@ export default function PaniniAlbum2026() {
   const [showExportText, setShowExportText] = useState(false);
   const [showFaltanQR, setShowFaltanQR] = useState(false);
   const [showExportTextFaltan, setShowExportTextFaltan] = useState(false);
+  const [progressHistory, setProgressHistory] = useState([]);
+  const [showProgressHistory, setShowProgressHistory] = useState(false);
+  const [progressMessage, setProgressMessage] = useState('');
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -167,6 +204,50 @@ export default function PaniniAlbum2026() {
       if (local !== null) setDarkMode(local === 'true');
     };
     loadDarkMode();
+  }, []);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      let localEntries = [];
+      try {
+        const localData = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+        if (localData) {
+          const parsed = JSON.parse(localData);
+          if (Array.isArray(parsed)) localEntries = parsed;
+        }
+      } catch (_) {}
+
+      let remoteEntries = null;
+      try {
+        if (progressHistoryDocRef) {
+          const snap = await getDoc(progressHistoryDocRef);
+          if (snap.exists() && Array.isArray(snap.data()?.entries)) {
+            remoteEntries = snap.data().entries;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading progress history from Firestore:', error);
+      }
+
+      if (remoteEntries === null) {
+        setProgressHistory(localEntries.map(normalizeHistoryEntry));
+        return;
+      }
+
+      const merged = mergeHistoryEntries(localEntries, remoteEntries);
+      setProgressHistory(merged);
+      try { localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(merged)); } catch (_) {}
+
+      // Re-sube al proveedor de la nube cualquier registro local (incluidas entradas
+      // "legacy" sin id/timestamp) que no haya llegado a Firestore — por ejemplo, un
+      // guardado previo que falló por estar offline.
+      const remoteIds = new Set(remoteEntries.map(e => normalizeHistoryEntry(e).id));
+      const missingFromCloud = merged.filter(e => !remoteIds.has(e.id));
+      if (missingFromCloud.length > 0 && progressHistoryDocRef) {
+        try { await setDoc(progressHistoryDocRef, { entries: arrayUnion(...missingFromCloud) }, { merge: true }); } catch (_) {}
+      }
+    };
+    loadHistory();
   }, []);
 
   useEffect(() => {
@@ -359,7 +440,33 @@ export default function PaniniAlbum2026() {
   const completedCount = Object.entries(completed).filter(([code, value]) => !code.startsWith('CC') && isCompletedSticker(value)).length;
   const repeatedCount = Object.values(completed).filter((value) => isRepeatedSticker(value)).length;
   const completionPercent = Math.round((completedCount / TOTAL_STICKERS) * 100);
+  const remainingPercent = 100 - completionPercent;
   const remainingCount = Math.max(TOTAL_STICKERS - completedCount, 0);
+
+  const handleMarkProgress = async () => {
+    const now = new Date();
+    const entry = {
+      id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+      timestamp: now.getTime(),
+      dateLabel: formatDateTime(now),
+      percentCompleted: completionPercent,
+      percentRemaining: remainingPercent,
+      completedCount,
+      remainingCount,
+    };
+    const nextHistory = [...progressHistory, entry];
+    setProgressHistory(nextHistory);
+    try { localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(nextHistory)); } catch (_) {}
+    try {
+      // Se usa arrayUnion (append atómico) en vez de sobreescribir todo el array,
+      // para no perder registros guardados casi al mismo tiempo desde otro dispositivo.
+      if (progressHistoryDocRef) await setDoc(progressHistoryDocRef, { entries: arrayUnion(entry) }, { merge: true });
+    } catch (error) {
+      console.error('Error saving progress history to Firestore:', error);
+    }
+    setProgressMessage('✅ Progreso marcado');
+    setTimeout(() => setProgressMessage(''), 2000);
+  };
 
   const shieldCodes = teams
     .filter((team) => !team.startsWith('FWC') && team !== 'COCA')
@@ -1727,6 +1834,21 @@ export default function PaniniAlbum2026() {
                 Estadísticas Selecciones
               </button>
               <button
+                onClick={handleMarkProgress}
+                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                Marcar Progreso
+              </button>
+              <button
+                onClick={() => { setShowStats(false); setShowProgressHistory(true); }}
+                className="bg-orange-500 text-white px-6 py-3 rounded-2xl font-black"
+              >
+                Ver Progreso
+              </button>
+              {progressMessage && (
+                <span className="w-full text-green-600 font-black">{progressMessage}</span>
+              )}
+              <button
                 onClick={() => setShowStats(false)}
                 className={`px-6 py-3 rounded-2xl font-black ${darkMode ? 'bg-slate-600 text-white' : 'bg-slate-300 text-slate-800'}`}
               >
@@ -1735,6 +1857,13 @@ export default function PaniniAlbum2026() {
             </div>
           </div>
         </div>
+      )}
+      {showProgressHistory && (
+        <ProgressHistoryModal
+          history={progressHistory}
+          darkMode={darkMode}
+          onClose={() => setShowProgressHistory(false)}
+        />
       )}
       {showQR && <QRModal onClose={() => setShowQR(false)} />}
       {showRepetidasQR && <QRModal url={window.location.origin + window.location.pathname + '?view=repetidas'} onClose={() => setShowRepetidasQR(false)} />}
@@ -1847,6 +1976,55 @@ function getPlayerNameForCode(code, team) {
     return playerNames[team]?.[id] || `Jugador ${id}`;
   }
   return code;
+}
+
+function ProgressHistoryModal({ history, darkMode, onClose }) {
+  const rows = [...history].sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+      <div className={`rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-2xl transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+        <h3 className="text-2xl font-black italic uppercase mb-6">Ver Progreso</h3>
+        {rows.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-3">📊</div>
+            <div className="font-black text-xl">Todavía no hay registros</div>
+            <div className={`mt-2 text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              Usá "Marcar Progreso" para guardar una foto de tu avance.
+            </div>
+          </div>
+        ) : (
+          <div className="max-h-[60vh] overflow-auto rounded-2xl border border-slate-300/30">
+            <table className="w-full text-sm">
+              <thead className={`sticky top-0 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <tr className="text-left font-black uppercase text-xs">
+                  <th className="px-3 py-2">Fecha y Hora</th>
+                  <th className="px-3 py-2 text-right">% Completado</th>
+                  <th className="px-3 py-2 text-right">% Restante</th>
+                  <th className="px-3 py-2 text-right">Completadas</th>
+                  <th className="px-3 py-2 text-right">Restantes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((entry) => (
+                  <tr key={entry.id ?? entry.dateLabel} className={`border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                    <td className="px-3 py-2 font-black whitespace-nowrap">{entry.dateLabel}</td>
+                    <td className="px-3 py-2 text-right">{entry.percentCompleted}%</td>
+                    <td className="px-3 py-2 text-right">{entry.percentRemaining}%</td>
+                    <td className="px-3 py-2 text-right">{entry.completedCount}</td>
+                    <td className="px-3 py-2 text-right">{entry.remainingCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button onClick={onClose}
+            className={`px-6 py-3 rounded-2xl font-black ${darkMode ? 'bg-slate-600 text-white' : 'bg-slate-300 text-slate-800'}`}>Cerrar</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function QRModal({ onClose, url }) {
