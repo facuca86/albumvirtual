@@ -212,27 +212,29 @@ export default function PaniniAlbum2026() {
     if (currentView !== 'otros-proyectos' || !db) return;
     let cancelled = false;
     const fetchProgress = async () => {
-      const progressData = {};
-      for (const proyecto of PROYECTOS) {
-        if (proyecto.id === ALBUM_ID) continue;
-        try {
-          const snap = await getDoc(doc(db, 'albumProgress', proyecto.id));
-          if (snap.exists()) {
-            const stickers = snap.data()?.stickers || {};
-            const pegadas = Object.values(stickers).filter(v => v === true || v === 'repeated').length;
-            progressData[proyecto.id] = {
+      // Se leen todos los álbumes en paralelo (no secuencial) y se usa el
+      // `completedCount` ya calculado que cada álbum guarda junto con `stickers`,
+      // para no tener que bajar el mapa completo de figuritas de cada uno.
+      const entries = await Promise.all(
+        PROYECTOS.filter(proyecto => proyecto.id !== ALBUM_ID).map(async (proyecto) => {
+          try {
+            const snap = await getDoc(doc(db, 'albumProgress', proyecto.id));
+            if (!snap.exists()) return [proyecto.id, null];
+            const data = snap.data();
+            const pegadas = typeof data?.completedCount === 'number'
+              ? data.completedCount
+              : Object.values(data?.stickers || {}).filter(v => v === true || v === 'repeated').length;
+            return [proyecto.id, {
               pegadas,
               total: proyecto.totalStickers,
               pct: Math.round((pegadas / proyecto.totalStickers) * 100),
-            };
-          } else {
-            progressData[proyecto.id] = null;
+            }];
+          } catch (_) {
+            return [proyecto.id, null];
           }
-        } catch (_) {
-          progressData[proyecto.id] = null;
-        }
-      }
-      if (!cancelled) setOtrosProyectosProgress(progressData);
+        })
+      );
+      if (!cancelled) setOtrosProyectosProgress(Object.fromEntries(entries));
     };
     fetchProgress();
     return () => { cancelled = true; };
@@ -286,9 +288,15 @@ export default function PaniniAlbum2026() {
     const saveProgress = async () => {
       if (isInitialLoad.current) return;
 
+      // completedCount se guarda ya calculado junto con stickers para que la vista
+      // "Otros Proyectos" de otros álbumes no tenga que bajar el mapa completo de
+      // stickers de este álbum y contarlo cliente-side en cada carga.
+      const completedCountToSave = Object.entries(completed)
+        .filter(([code, value]) => !code.startsWith('CC') && isCompletedSticker(value)).length;
+
       try {
         if (progressDocRef) {
-          await setDoc(progressDocRef, { stickers: completed });
+          await setDoc(progressDocRef, { stickers: completed, completedCount: completedCountToSave });
         }
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(completed));
       } catch (error) {
@@ -852,14 +860,15 @@ export default function PaniniAlbum2026() {
               })}
             </div>
             {(() => {
-              const entries = Object.values(otrosProyectosProgress).filter(Boolean);
-              if (entries.length === 0) return null;
-              const totalPegadas = entries.reduce((sum, p) => sum + p.pegadas, 0);
-              const totalFaltantes = entries.reduce((sum, p) => sum + (p.total - p.pegadas), 0);
-              const totalStickersOtros = PROYECTOS
-                .filter(p => p.id !== ALBUM_ID && otrosProyectosProgress[p.id])
-                .reduce((sum, p) => sum + p.totalStickers, 0);
-              const promedio = totalStickersOtros > 0 ? Math.round((totalPegadas / totalStickersOtros) * 100) : 0;
+              // "Colección completa" incluye este álbum (host) más los que hayan
+              // cargado bien desde Firebase. El promedio es el promedio simple de
+              // % de cada álbum (no ponderado por cantidad de figuritas de cada uno).
+              if (Object.keys(otrosProyectosProgress).length === 0) return null;
+              const otherEntries = Object.values(otrosProyectosProgress).filter(Boolean);
+              const allPercents = [completionPercent, ...otherEntries.map(p => p.pct)];
+              const promedio = Math.round(allPercents.reduce((sum, pct) => sum + pct, 0) / allPercents.length);
+              const totalPegadas = completedCount + otherEntries.reduce((sum, p) => sum + p.pegadas, 0);
+              const totalFaltantes = remainingCount + otherEntries.reduce((sum, p) => sum + (p.total - p.pegadas), 0);
               return (
                 <div className={`mt-6 px-4 py-2.5 rounded-xl text-xs leading-relaxed ${darkMode ? 'bg-white/5 text-white/70' : 'bg-black/5 text-slate-600'}`}>
                   * Colección completa · {promedio}% promedio · {totalPegadas.toLocaleString()} figuritas pegadas · {totalFaltantes.toLocaleString()} faltantes
