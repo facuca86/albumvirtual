@@ -191,18 +191,22 @@ export default function PaniniAlbum2026() {
   }, []);
 
   useEffect(() => {
+    // La preferencia local (de este dispositivo) manda siempre: es síncrona
+    // y confiable. Firestore solo se usa como valor por defecto para
+    // dispositivos nuevos que todavía no tienen una preferencia guardada.
+    const local = localStorage.getItem(LOCAL_STORAGE_DARK_KEY);
+    if (local !== null) setDarkMode(local === 'true');
+
     const loadDarkMode = async () => {
+      if (!settingsDocRef) return;
       try {
-        if (settingsDocRef) {
-          const snap = await getDoc(settingsDocRef);
-          if (snap.exists() && typeof snap.data()?.darkMode === 'boolean') {
-            setDarkMode(snap.data().darkMode);
-            return;
-          }
+        const snap = await getDoc(settingsDocRef);
+        if (local === null && snap.exists() && typeof snap.data()?.darkMode === 'boolean') {
+          setDarkMode(snap.data().darkMode);
         }
-      } catch {}
-      const local = localStorage.getItem(LOCAL_STORAGE_DARK_KEY);
-      if (local !== null) setDarkMode(local === 'true');
+      } catch (err) {
+        console.warn('No se pudo sincronizar el modo oscuro con Firestore:', err);
+      }
     };
     loadDarkMode();
   }, []);
@@ -422,7 +426,11 @@ export default function PaniniAlbum2026() {
     setDarkMode(newVal);
     localStorage.setItem(LOCAL_STORAGE_DARK_KEY, String(newVal));
     if (settingsDocRef) {
-      try { await setDoc(settingsDocRef, { darkMode: newVal }, { merge: true }); } catch (_) {}
+      try {
+        await setDoc(settingsDocRef, { darkMode: newVal }, { merge: true });
+      } catch (err) {
+        console.warn('No se pudo guardar el modo oscuro en Firestore (quedó guardado solo en este dispositivo):', err);
+      }
     }
   };
 
