@@ -792,7 +792,7 @@ MEX: {
   9: "Ibrahim Saadeh",
   10: "Nizar Al-Rashdan",
   11: "Noor Al-Rawabdeh",
-  12: "Mohammad Abu Zraiq",
+  12: "Mohannad Abu Taha",
   14: "Amer Jamous",
   15: "Mousa Al-Taamari",
   16: "Yazan Al-Naimat",
