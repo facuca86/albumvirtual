@@ -788,7 +788,7 @@ MEX: {
   5: "Yazan Al-Arab",
   6: "Abdallah Nasib",
   7: "Salem Obaid",
-  8: "Mohannad Abu Taha",
+  8: "Mohammad Abualnadi",
   9: "Ibrahim Saadeh",
   10: "Nizar Al-Rashdan",
   11: "Noor Al-Rawabdeh",
