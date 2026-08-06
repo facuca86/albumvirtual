@@ -4,15 +4,16 @@
 Este repositorio implementa un **álbum virtual Panini FIFA World Cup 2026** en una sola página web basada en React, con carga en navegador sin bundler, y persistencia de progreso en Firestore cuando hay configuración disponible; en caso contrario, usa `localStorage`.
 
 ### Colección oficial
-- **Total de stickers de la colección: 981**
+- **Total de stickers de la colección: 980**
 - Desglose:
   | Sección | Stickers |
   |---|---|
   | Intro (PANINI + FWC1–FWC8) | 9 |
-  | FWC Historia (FWC9–FWC20) | 12 |
+  | FWC Historia (FWC9–FWC19) | 11 |
   | 48 selecciones × 20 stickers | 960 |
-  | **Total** | **981** |
+  | **Total** | **980** |
 - La sección Intro tiene **9 stickers en total**: el sticker PANINI (1) más los stickers FWC1 a FWC8 (8), distribuidos en dos páginas (FWCI1 y FWCI2).
+- La sección Historia tiene **11 stickers** (FWC9–FWC19). Originalmente incluía un `FWC20` que no forma parte de la colección real; se eliminó en el commit `38185bd` (18 jun 2026), que también bajó `TOTAL_STICKERS` de 981 a 980 y el conteo de figuritas brillantes de 68 a 67.
 - **Los stickers de Coca-Cola (CC1–CC14) NO forman parte de la colección oficial Panini.** Están físicamente presentes en el álbum como colección promocional, son seleccionables en la app, pero se excluyen del conteo de progreso (`completedCount`, `completionPercent`, `remainingCount`).
 
 Arquitectónicamente, el proyecto está orientado a:
@@ -145,7 +146,7 @@ Esta vista es **pública y de solo lectura**: cualquier persona con el link (o e
 | Botón "Generar QR" | Agregado al bloque de botones del modal de estadísticas, color `bg-purple-600` |
 | `{showQR && <QRModal …/>}` | Render condicional del overlay QR, fuera del bloque `showStats` |
 | `FWC_LABELS` | Mapa estático `código → etiqueta legible` para los stickers especiales (intro, historia). Evita duplicar la lógica de labels que ya existe en el `useMemo` principal |
-| `getTeamForCode(code)` | Helper puro: dado un código de sticker, devuelve el código de equipo al que pertenece. Cubre PANINI, FWC1–FWC20, CC1–CC14 y todos los equipos normales |
+| `getTeamForCode(code)` | Helper puro: dado un código de sticker, devuelve el código de equipo al que pertenece. Cubre PANINI, FWC1–FWC19, CC1–CC14 y todos los equipos normales |
 | `getPlayerNameForCode(code, team)` | Helper puro: dado código y equipo, devuelve el nombre del jugador, una etiqueta especial (Escudo, Foto equipo, nombre del mundial) o el código mismo si no hay nombre disponible |
 | `QRModal` | Componente funcional. Usa `useRef` + `useEffect` para instanciar `new window.QRCode(ref, { text, width, height })` post-mount. Muestra la URL en texto y un botón Cerrar. `z-[70]` para aparecer encima del modal de estadísticas (`z-[60]`) |
 | `RepeatidasView` | Componente funcional. Carga el documento Firestore `albumProgress/paniniWorldCup2026` (o localStorage como fallback), filtra entradas con `value === 'repeated'`, agrupa por equipo respetando el orden del array `teams`, y renderiza una card por equipo con chips de figurita. Si no hay repetidas muestra un estado vacío |
@@ -201,7 +202,7 @@ Esta vista es **pública y de solo lectura**: cualquier persona con el link (o e
 ---
 
 ### 3.3 Estado de las mejoras registradas en `TASKS_REFACTOR.md`
-1. ✅ **Total de stickers oficiales** — Se definió `TOTAL_STICKERS = 981`. La constante se usa en `completionPercent`, `remainingCount` y en la UI. Los stickers de Coca-Cola (CC1–CC14) se excluyen del conteo aunque sean seleccionables.
+1. ✅ **Total de stickers oficiales** — Se definió `TOTAL_STICKERS` (ajustado luego de 981 a **980** al eliminar `FWC20`, ver §1). La constante se usa en `completionPercent`, `remainingCount` y en la UI. Los stickers de Coca-Cola (CC1–CC14) se excluyen del conteo aunque sean seleccionables.
 2. ✅ **Correcciones tipográficas “Poster” → “Póster”** — Resuelto. Todos los labels usan “Póster” con acento: “Póster”, “Póster Canadá”, “Póster México”, “Póster USA”. No quedan ocurrencias sin acento.
 3. ✅ **Unificación de fuente de verdad de equipos** — Resuelto. Se eliminó `completeTeamData` y el bloque `Object.assign`. Existe un único objeto `teamData` como fuente de verdad.
 4. Extracción de lógica de generación de stickers y cobertura de pruebas automatizadas — pendiente.
@@ -292,7 +293,7 @@ Dado el tamaño de reglas condicionales y datasets:
 ### 7.1 Motivación
 El álbum 2026 fue el primero del proyecto y tenía **todos los datos hardcodeados** dentro de `panini_virtual_album_2026_app.jsx` (identidad, conteos, catálogo de equipos, grupos, secciones especiales, navegación entre proyectos y colores inline). El álbum 2022 ya estaba refactorizado con un archivo de configuración externo (`albumConfig_2022.js`) que parametriza todo. Esta iteración migra el 2026 a **ese mismo patrón**: un único archivo de configuración como fuente de verdad, fácil de mantener y documentado.
 
-**Es una refactorización pura.** Ningún comportamiento ni aspecto visual cambió: mismos conteos (981), mismo `id` (`paniniWorldCup2026`), mismos colores, misma persistencia, mismas vistas. Solo cambió *dónde viven* los datos.
+**Es una refactorización pura.** Ningún comportamiento ni aspecto visual cambió: mismos conteos (981 en ese momento; ajustado luego a 980, ver §1), mismo `id` (`paniniWorldCup2026`), mismos colores, misma persistencia, mismas vistas. Solo cambió *dónde viven* los datos.
 
 ### 7.2 Archivo creado: `albumConfig_2026.js`
 Se extrajo a este archivo nuevo **todo** lo que estaba hardcodeado en el JSX. Exporta un objeto `albumConfig` con estos bloques:
@@ -300,7 +301,7 @@ Se extrajo a este archivo nuevo **todo** lo que estaba hardcodeado en el JSX. Ex
 | Bloque | Contenido | De dónde salió en el JSX |
 |---|---|---|
 | **Identidad / almacenamiento** | `id`, `owner`, `title`, `subtitle`, `exportFileName`, `localStorageKey`, `localStorageDarkKey` | `ALBUM_ID`, `ALBUM_OWNER`, `LOCAL_STORAGE_KEY`, `LOCAL_STORAGE_DARK_KEY`, título/subtítulo del header, nombre del backup |
-| **Conteos** | `totalStickers` (981), `teamStickerCount` (20), `counts` (`team`, `fwci`, `fwch`, `coca`) | `TOTAL_STICKERS`, `STICKERS_TEAM`, `STICKERS_FWCI`, `STICKERS_FWCH`, `STICKERS_COCA` |
+| **Conteos** | `totalStickers` (980), `teamStickerCount` (20), `counts` (`team`, `fwci`, `fwch`, `coca`) | `TOTAL_STICKERS`, `STICKERS_TEAM`, `STICKERS_FWCI`, `STICKERS_FWCH`, `STICKERS_COCA` |
 | **`teams`** | Orden de navegación completo (52 entradas: `FWCI1`, 48 selecciones, `FWCH1`, `FWCH2`, `COCA`) | `teams` |
 | **`teamData`** | Nombres, federaciones y banderas (53 entradas: 48 selecciones + `FWCI1`, `FWCI2`, `FWCH1`, `FWCH2`, `COCA`) | `teamData` |
 | **`teamGroups`** | Pertenencia a grupo y miembros mostrados en la mini-tabla de cada selección (48) | `teamGroups` |
@@ -321,7 +322,7 @@ Se extrajo a este archivo nuevo **todo** lo que estaba hardcodeado en el JSX. Ex
 **Atención:** a diferencia del 2022 (Intro e Historia como sección única), el 2026 las tiene **partidas en dos páginas cada una**. Esto se modeló fielmente para no alterar el render:
 
 - **Intro** → `FWCI1` / `FWCI2` (códigos `00`, `FWC1..FWC8`). En el recorrido (`teams`) solo aparece `FWCI1`, que renderiza la intro en una sola página con dos paneles, igual que el JSX original. `FWCI2` existe en `teamData` (para el índice) pero no se recorre por separado. `specialSections.FWCI1.items` contiene la definición exacta de los 9 stickers de la intro.
-- **Historia** → `FWCH1` / `FWCH2` (códigos `FWC9..FWC20`). Cada página tiene su `pageItems` (grilla completa: stickers + casillas impresas) y su `selectable` (solo los stickers seleccionables).
+- **Historia** → `FWCH1` / `FWCH2` (códigos `FWC9..FWC19`). Cada página tiene su `pageItems` (grilla completa: stickers + casillas impresas) y su `selectable` (solo los stickers seleccionables).
 
 La prioridad fue **no cambiar el render**, no que el config sea idéntico al del 2022.
 
@@ -358,9 +359,9 @@ Como parte de esta migración, `proyectos` quedó con las **cuatro** entradas vi
 
 ### 7.8 Cómo verificar que nada se rompió
 1. **Persistencia:** `albumConfig.id` sigue siendo `paniniWorldCup2026` → las claves de Firestore (`albumProgress/paniniWorldCup2026`, `albumSettings/paniniWorldCup2026`) y de localStorage (`paniniWorldCup2026_stickers`, `paniniWorldCup2026_darkMode`) no cambian. El progreso existente se carga igual.
-2. **Conteos:** `totalStickers` = 981; Coca-Cola (CC1–CC14) sigue excluida de `completedCount`/`completionPercent`/`remainingCount`.
+2. **Conteos:** `totalStickers` = 980; Coca-Cola (CC1–CC14) sigue excluida de `completedCount`/`completionPercent`/`remainingCount`.
 3. **Render:** abrir `index.html`, recorrer las 48 selecciones, los 12 grupos y las secciones especiales (FWCI1, FWCH1, FWCH2, COCA). Verificar que el índice muestra FWCI1/FWCH1/FWCH2/COCA y que FWCI2 no se recorre por separado (igual que antes).
-4. **Funciones:** brillantes (68), estadísticas, buscador, exportar/importar JSON y QR de repetidas funcionan igual.
+4. **Funciones:** brillantes (67), estadísticas, buscador, exportar/importar JSON y QR de repetidas funcionan igual.
 5. **Estética:** ningún color cambió de valor — el resultado visual es idéntico.
 6. **Consola:** la app carga sin errores (incluido el de Firestore, gracias a la carga desde `gstatic.com`).
 7. **Transpilación:** `albumConfig_2026.js` pasa `node --check`; el JSX transpila sin errores con `@babel/preset-react`.

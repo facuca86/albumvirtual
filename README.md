@@ -12,16 +12,16 @@ La app corre directamente abriendo `index.html` en cualquier navegador moderno. 
 
 ## Características
 
-### Colección completa de 981 figuritas
+### Colección completa de 980 figuritas
 
 El álbum cubre la colección oficial Panini FIFA World Cup 2026:
 
 | Sección | Figuritas |
 |---|---|
 | Intro Panini (FWCI1, FWCI2) | 9 |
-| Historia del Mundial (FWCH1, FWCH2) | 12 |
+| Historia del Mundial (FWCH1, FWCH2) | 11 |
 | 48 selecciones × 20 figuritas | 960 |
-| **Total oficial** | **981** |
+| **Total oficial** | **980** |
 
 > Las figuritas de Coca-Cola (CC1–CC14) están disponibles en la app pero no se cuentan en el total oficial.
 
@@ -49,7 +49,7 @@ Son elementos de fondo; las letras siempre quedan por encima. No aparecen en fot
 
 ### Figuritas brillantes
 
-Las figuritas de escudo de cada selección (posición 1 de cada equipo) y las figuritas de introducción del mundial son consideradas **figuritas brillantes** (68 en total). Las estadísticas te muestran cuántas llevas de este tipo especial.
+Las figuritas de escudo de cada selección (posición 1 de cada equipo) y las figuritas de introducción/historia del mundial (FWC1–FWC19) son consideradas **figuritas brillantes** (67 en total). Las estadísticas te muestran cuántas llevas de este tipo especial.
 
 ### Estadísticas
 
@@ -153,7 +153,7 @@ Cada selección tiene 20 figuritas: escudo, foto de equipo y 18 jugadores.
 |---|---|
 | `PANINI` | Figurita logo Panini |
 | `FWC1`–`FWC8` | Intro del mundial (logos, balón, pósters) |
-| `FWC9`–`FWC20` | Historia (campeones mundiales) |
+| `FWC9`–`FWC19` | Historia (campeones mundiales) |
 | `ARG1`–`ARG20` | Selección Argentina |
 | `MEX1`–`MEX20` | Selección México |
 | `CC1`–`CC14` | Promoción Coca-Cola (no oficial) |
