@@ -2,7 +2,7 @@
 
 ## 1) ✅ Corregir porcentaje global de avance — RESUELTO
 
-- Se definió `TOTAL_STICKERS = 981` (1 Panini + 8 FWC Intro + 48×20 selecciones + 12 FWC Historia).
+- Se definió `TOTAL_STICKERS = 980` (1 Panini + 8 FWC Intro + 48×20 selecciones + 11 FWC Historia). *(Ajustado de 981 a 980 tras eliminar `FWC20`, que no existe en la colección real — ver `DOCUMENTACION_TECNICA.md`.)*
 - Los stickers de Coca-Cola (CC1–CC14) son seleccionables pero **no cuentan** en el total oficial.
 - `completedCount` excluye códigos `CC*`; `completionPercent` y `remainingCount` usan `TOTAL_STICKERS`.
 
