@@ -122,6 +122,107 @@ function getTeamConfettiColors(teamCode) {
   return colors.length >= 2 ? [...colors, '#ffffff'] : PAL.confettiDefault;
 }
 
+// ─── Sistema de Logros ────────────────────────────────────────────────────────
+
+const LOCAL_STORAGE_ACHIEVEMENTS_KEY = `${ALBUM_ID}_achievements`;
+const REAL_TEAMS = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA');
+const isCompletedStickerValue = (value) => value === true || value === 'repeated';
+
+const calcularStats = (completed, players) => {
+  const pegadas = Object.entries(completed)
+    .filter(([code, value]) => !code.startsWith('CC') && isCompletedStickerValue(value)).length;
+  const pct = Math.round((pegadas / TOTAL_STICKERS) * 100);
+
+  let equiposCompletos = 0;
+  let escudosPegados = 0;
+  let estrellasPegadas = 0;
+  for (const team of REAL_TEAMS) {
+    const codes = getTeamCodes(team);
+    if (codes.every((code) => isCompletedStickerValue(completed[code]))) equiposCompletos++;
+    if (isCompletedStickerValue(completed[`${team}1`])) escudosPegados++;
+    const starNum = players[team]?.star;
+    if (starNum && isCompletedStickerValue(completed[`${team}${starNum}`])) estrellasPegadas++;
+  }
+
+  const seccionCompleta = (teamCode) => {
+    const codes = getTeamCodes(teamCode);
+    return codes.every((code) => isCompletedStickerValue(completed[code]));
+  };
+
+  return { pct, equiposCompletos, escudosPegados, estrellasPegadas, seccionCompleta };
+};
+
+const LOGRO_CATEGORIAS = [
+  { id: 'progreso', label: 'Progreso del Álbum' },
+  { id: 'selecciones', label: 'Selecciones' },
+  { id: 'escudos', label: 'Escudos' },
+  { id: 'estrellas', label: 'Estrellas' },
+  { id: 'campeones', label: 'Campeones del Mundo' },
+];
+
+const LOGROS = [
+  // Progreso del álbum — con mensaje de celebración
+  { id: 'la-mitad', titulo: 'La Mitad', mensaje: '¡Alcanzaste el 50% del álbum completado, felicitaciones!', icono: '🏅', categoria: 'progreso', evaluar: (stats) => stats.pct >= 50 },
+  { id: 'ya-casi', titulo: 'Ya Casi', mensaje: '¡Llegaste al 75%! Ya te salen todas repetidas pero no podés parar, ¡a seguir!', icono: '🏅', categoria: 'progreso', evaluar: (stats) => stats.pct >= 75 },
+  { id: 'campeon-album', titulo: 'Campeón del Álbum', mensaje: '¡Completaste el álbum del Mundial! Un recuerdo para toda la vida.', icono: '🏆', categoria: 'progreso', evaluar: (stats) => stats.pct >= 100 },
+
+  // Selecciones completadas — sin mensaje
+  { id: 'equipos-12', titulo: '12 Equipos', icono: '👥', categoria: 'selecciones', evaluar: (stats) => stats.equiposCompletos >= 12 },
+  { id: 'equipos-24', titulo: '24 Equipos', icono: '👥', categoria: 'selecciones', evaluar: (stats) => stats.equiposCompletos >= 24 },
+  { id: 'equipos-36', titulo: '36 Equipos', icono: '👥', categoria: 'selecciones', evaluar: (stats) => stats.equiposCompletos >= 36 },
+
+  // Escudos conseguidos — sin mensaje
+  { id: 'escudos-16', titulo: '16 Escudos', icono: '🛡️', categoria: 'escudos', evaluar: (stats) => stats.escudosPegados >= 16 },
+  { id: 'escudos-32', titulo: '32 Escudos', icono: '🛡️', categoria: 'escudos', evaluar: (stats) => stats.escudosPegados >= 32 },
+  { id: 'escudos-48', titulo: '48 Escudos', icono: '🛡️', categoria: 'escudos', evaluar: (stats) => stats.escudosPegados >= 48 },
+
+  // Estrellas conseguidas — sin mensaje
+  { id: 'estrellas-16', titulo: '16 Estrellas', icono: '⭐', categoria: 'estrellas', evaluar: (stats) => stats.estrellasPegadas >= 16 },
+  { id: 'estrellas-32', titulo: '32 Estrellas', icono: '⭐', categoria: 'estrellas', evaluar: (stats) => stats.estrellasPegadas >= 32 },
+  { id: 'estrellas-48', titulo: '48 Estrellas', icono: '⭐', categoria: 'estrellas', evaluar: (stats) => stats.estrellasPegadas >= 48 },
+
+  // Campeones del mundo presentes en el álbum 2026 — sin mensaje
+  { id: 'campeon-URU', titulo: 'Uruguay Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('URU') },
+  { id: 'campeon-GER', titulo: 'Alemania Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('GER') },
+  { id: 'campeon-BRA', titulo: 'Brasil Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('BRA') },
+  { id: 'campeon-ENG', titulo: 'Inglaterra Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ENG') },
+  { id: 'campeon-ARG', titulo: 'Argentina Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ARG') },
+  { id: 'campeon-FRA', titulo: 'Francia Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('FRA') },
+  { id: 'campeon-ESP', titulo: 'España Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ESP') },
+];
+
+const cargarAchievements = async () => {
+  try {
+    if (progressDocRef) {
+      const snap = await getDoc(progressDocRef);
+      if (snap.exists() && Array.isArray(snap.data()?.achievements)) {
+        return new Set(snap.data().achievements);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading achievements from Firestore:', error);
+  }
+  try {
+    const local = localStorage.getItem(LOCAL_STORAGE_ACHIEVEMENTS_KEY);
+    if (local) return new Set(JSON.parse(local));
+  } catch (_) {}
+  return new Set();
+};
+
+const persistirAchievements = async (achievementsSet) => {
+  const arr = [...achievementsSet];
+  try {
+    if (progressDocRef) {
+      await setDoc(progressDocRef, { achievements: arr }, { merge: true });
+    }
+  } catch (error) {
+    console.error('Error saving achievements to Firestore:', error);
+  }
+  try {
+    localStorage.setItem(LOCAL_STORAGE_ACHIEVEMENTS_KEY, JSON.stringify(arr));
+  } catch (_) {}
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PaniniAlbum2026() {
@@ -157,6 +258,10 @@ export default function PaniniAlbum2026() {
   const [showProgressHistory, setShowProgressHistory] = useState(false);
   const [progressMessage, setProgressMessage] = useState('');
   const [otrosProyectosProgress, setOtrosProyectosProgress] = useState({});
+  const [achievements, setAchievements] = useState(new Set());
+  const [achievementsLoaded, setAchievementsLoaded] = useState(false);
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  const initialAchievementsValidated = useRef(false);
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -184,11 +289,38 @@ export default function PaniniAlbum2026() {
         console.error('Error loading album progress from Firestore:', error);
       } finally {
         isInitialLoad.current = false;
+        setProgressLoaded(true);
       }
     };
 
     loadProgress();
   }, []);
+
+  // ── Logros: carga inicial de logros ya desbloqueados ──────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    cargarAchievements().then((set) => {
+      if (!cancelled) {
+        setAchievements(set);
+        setAchievementsLoaded(true);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── Logros: validación inicial única (sin celebración) ────────────────────
+  useEffect(() => {
+    if (!progressLoaded || !achievementsLoaded || initialAchievementsValidated.current) return;
+    initialAchievementsValidated.current = true;
+
+    const stats = calcularStats(completed, playerNames);
+    const nuevosLogros = LOGROS.filter((l) => !achievements.has(l.id) && l.evaluar(stats));
+    if (nuevosLogros.length > 0) {
+      const nuevoSet = new Set([...achievements, ...nuevosLogros.map((l) => l.id)]);
+      setAchievements(nuevoSet);
+      persistirAchievements(nuevoSet);
+    }
+  }, [progressLoaded, achievementsLoaded]);
 
   useEffect(() => {
     // La preferencia local (de este dispositivo) manda siempre: es síncrona
@@ -300,7 +432,10 @@ export default function PaniniAlbum2026() {
 
       try {
         if (progressDocRef) {
-          await setDoc(progressDocRef, { stickers: completed, completedCount: completedCountToSave });
+          // mergeFields (no merge:true): reemplaza stickers/completedCount por
+          // completo -para no resucitar códigos borrados- sin pisar `achievements`,
+          // que vive en el mismo doc.
+          await setDoc(progressDocRef, { stickers: completed, completedCount: completedCountToSave }, { mergeFields: ['stickers', 'completedCount'] });
         }
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(completed));
       } catch (error) {
@@ -366,7 +501,7 @@ export default function PaniniAlbum2026() {
         horizontal = true;
       } else {
         type = id === 1 ? 'shield' : id === 13 ? 'team' : 'player';
-        label = type === 'shield' ? 'Escudo' : type === 'team' ? 'Foto equipo' : playerNames[currentTeam]?.[id] || `Jugador ${id}`;
+        label = type === 'shield' ? 'Escudo' : type === 'team' ? 'Foto equipo' : playerNames[currentTeam]?.players?.[id] || `Jugador ${id}`;
         horizontal = id === 13;
       }
 
@@ -382,6 +517,23 @@ export default function PaniniAlbum2026() {
     });
   }, [currentTeam, completed, stickerCount]);
 
+  const evaluarLogros = (nuevoCompleted) => {
+    if (!achievementsLoaded) return;
+    const stats = calcularStats(nuevoCompleted, playerNames);
+    const nuevosLogros = LOGROS.filter((l) => !achievements.has(l.id) && l.evaluar(stats));
+    if (nuevosLogros.length === 0) return;
+
+    const nuevoSet = new Set([...achievements, ...nuevosLogros.map((l) => l.id)]);
+    setAchievements(nuevoSet);
+    persistirAchievements(nuevoSet);
+
+    nuevosLogros
+      .filter((l) => l.mensaje)
+      .forEach((l, i) => {
+        setTimeout(() => setCelebration({ type: 'achievement', titulo: l.titulo, mensaje: l.mensaje, icono: l.icono }), 400 + i * 500);
+      });
+  };
+
   const toggleSticker = (code) => {
     const current = completed[code];
     let next;
@@ -394,6 +546,7 @@ export default function PaniniAlbum2026() {
       next = { ...completed, [code]: true };
     }
     setCompleted(next);
+    evaluarLogros(next);
 
     // Only trigger animations/celebrations when going empty → completed
     if (!current) {
@@ -475,7 +628,7 @@ export default function PaniniAlbum2026() {
         setCompleted(parsed);
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
         if (progressDocRef) {
-          try { await setDoc(progressDocRef, { stickers: parsed }); } catch (_) {}
+          try { await setDoc(progressDocRef, { stickers: parsed }, { mergeFields: ['stickers'] }); } catch (_) {}
         }
         setImportMessage('✅ Progreso importado');
         setTimeout(() => setImportMessage(''), 2000);
@@ -624,7 +777,7 @@ export default function PaniniAlbum2026() {
       const info = teamData[team];
       for (let id = 1; id <= 20; id++) {
         const code = `${team}${id}`;
-        const label = id === 1 ? 'Escudo' : id === 13 ? 'Foto equipo' : (playerNames[team]?.[id] || `Jugador ${id}`);
+        const label = id === 1 ? 'Escudo' : id === 13 ? 'Foto equipo' : (playerNames[team]?.players?.[id] || `Jugador ${id}`);
         entries.push({ code, label, team, teamName: info?.name || team, teamFlag: info?.flag || '🏳️' });
       }
     });
@@ -793,6 +946,15 @@ export default function PaniniAlbum2026() {
             </button>
 
             <button
+              onClick={() => setCurrentView('logros')}
+              className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
+            >
+              <div className="text-3xl font-black italic uppercase">
+                Logros
+              </div>
+            </button>
+
+            <button
               onClick={() => setCurrentView('faltan')}
               className={`rounded-3xl p-8 shadow-xl text-left active:scale-95 transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}
             >
@@ -808,6 +970,60 @@ export default function PaniniAlbum2026() {
               <div className="text-3xl font-black italic uppercase">
                 Otros Proyectos
               </div>
+            </button>
+          </div>
+        )}
+
+        {currentView === 'logros' && (
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl max-w-4xl mx-auto transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceCardDark}] text-white` : 'bg-white'}`}>
+            <h2 className="text-3xl font-black italic uppercase mb-6">Logros</h2>
+            <div className="max-h-[65vh] overflow-y-auto pr-1 space-y-8">
+              {LOGRO_CATEGORIAS.map((categoria) => {
+                const logrosCategoria = LOGROS.filter((l) => l.categoria === categoria.id);
+                return (
+                  <div key={categoria.id}>
+                    <h3 className={`text-sm font-black uppercase tracking-widest mb-3 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {categoria.label}
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {logrosCategoria.map((logro) => {
+                        const desbloqueado = achievements.has(logro.id);
+                        return (
+                          <div
+                            key={logro.id}
+                            className={`rounded-2xl p-4 flex flex-col items-center text-center gap-2 border-2 transition-colors duration-300 ${
+                              desbloqueado
+                                ? darkMode
+                                  ? 'border-yellow-400 bg-yellow-400/10'
+                                  : 'border-yellow-500 bg-yellow-50'
+                                : darkMode
+                                ? 'border-slate-700 bg-slate-800/40'
+                                : 'border-slate-200 bg-slate-100'
+                            }`}
+                          >
+                            <div className={`text-4xl ${desbloqueado ? '' : 'grayscale opacity-30'}`}>
+                              {logro.icono}
+                            </div>
+                            <div className={`text-xs font-black uppercase leading-tight ${
+                              desbloqueado
+                                ? darkMode ? 'text-white' : 'text-slate-800'
+                                : darkMode ? 'text-slate-500' : 'text-slate-400'
+                            }`}>
+                              {logro.titulo}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setCurrentView('home')}
+              className="mt-6 bg-red-600 text-white px-6 py-3 rounded-2xl font-black"
+            >
+              VOLVER
             </button>
           </div>
         )}
@@ -1969,6 +2185,8 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
 
   const isShieldSticker = sticker.type === 'shield';
 
+  const isStarSticker = playerNames[currentTeam]?.star === sticker.id;
+
   // empty → slate-300 (más visible), completed → green-400 (verde sólido), repeated → slate-400
   const decorColor = sticker.repeated ? PAL.stickerDecorRepeated : sticker.completed ? PAL.stickerDecorCompleted : PAL.stickerDecorEmpty;
 
@@ -2004,6 +2222,15 @@ function Sticker({ sticker, horizontal = false, onToggle, currentTeam, darkMode 
         <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={svgStyle}>
           <path d="M 10 10 L 90 10 L 90 65 Q 90 105 50 118 Q 10 105 10 65 Z" fill={decorColor} />
         </svg>
+      )}
+      {isStarSticker && (
+        <div
+          className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 text-sm sm:text-xl leading-none drop-shadow"
+          style={{ color: '#FFD700', zIndex: 2 }}
+          aria-hidden="true"
+        >
+          ⭐
+        </div>
       )}
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div className={`text-[9px] sm:text-xs uppercase break-all ${sticker.repeated ? repeatedCodeClass : sticker.completed ? 'text-black font-extrabold' : 'text-slate-400 font-black'}`}>
@@ -2053,7 +2280,7 @@ function getPlayerNameForCode(code, team) {
     const id = parseInt(m[1]);
     if (id === 1) return 'Escudo';
     if (id === 13) return 'Foto equipo';
-    return playerNames[team]?.[id] || `Jugador ${id}`;
+    return playerNames[team]?.players?.[id] || `Jugador ${id}`;
   }
   return code;
 }
@@ -2471,22 +2698,23 @@ function Confetti({ colors }) {
 
 function CelebrationModal({ celebration, onClose }) {
   const isAlbum = celebration.type === 'album';
+  const isAchievement = celebration.type === 'achievement';
   const team = celebration.team;
   const teamInfo = team ? teamData[team] : null;
   const themeKey = team ? getThemeKey(team) : null;
   const theme = themeKey ? teamThemes[themeKey] : null;
 
-  const gradientClass = isAlbum
+  const gradientClass = isAlbum || isAchievement
     ? 'from-yellow-400 via-pink-500 to-purple-600'
     : theme?.gradient || 'from-emerald-500 to-green-600';
 
-  const confettiColors = isAlbum
+  const confettiColors = isAlbum || isAchievement
     ? PAL.confettiAlbum
     : team === 'COCA'
     ? PAL.confettiCoca
     : getTeamConfettiColors(team);
 
-  const isDark = isAlbum || theme?.dark;
+  const isDark = isAlbum || isAchievement || theme?.dark;
 
   return (
     <div className="fixed inset-0 z-[160]">
@@ -2500,13 +2728,15 @@ function CelebrationModal({ celebration, onClose }) {
           onClick={e => e.stopPropagation()}
         >
           <div className="text-7xl mb-4 drop-shadow-lg select-none">
-            {isAlbum ? '🏆' : teamInfo?.flag || '🏅'}
+            {isAchievement ? celebration.icono : isAlbum ? '🏆' : teamInfo?.flag || '🏅'}
           </div>
           <div className={`text-4xl font-black italic uppercase mb-2 drop-shadow ${isDark ? 'text-white' : 'text-slate-800'}`}>
             ¡Felicitaciones!
           </div>
           <div className={`text-xl font-black mb-8 ${isDark ? 'text-white/90' : 'text-slate-700'}`}>
-            {isAlbum
+            {isAchievement
+              ? celebration.mensaje
+              : isAlbum
               ? '¡Completaste el álbum!'
               : `¡Completaste ${teamInfo?.name || team}!`}
           </div>
