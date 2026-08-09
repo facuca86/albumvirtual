@@ -197,6 +197,31 @@ const LOGROS = [
   { id: 'la-cabra', titulo: 'La Cabra', mensaje: 'Te tocó el 10 de Rosario, el que levantó la Copa en Catar, el ídolo del Barcelona, el mejor de la historia.', icono: '🐐', categoria: 'especiales', evaluar: (stats) => stats.stickerPegado('ARG17') },
 ];
 
+// Recalcula el set de logros desbloqueados contra el estado actual del álbum:
+// agrega los que se cumplen y recién se cumplen, y quita los que ya no se
+// cumplen (ej. se destildó una figurita que hacía falta para "X Campeón").
+// Sin esto, un logro quedaba prendido para siempre aunque después el álbum
+// dejara de cumplir la condición que lo desbloqueó.
+const sincronizarLogros = (achievementsSet, stats) => {
+  const nuevoSet = new Set(achievementsSet);
+  const nuevosLogros = [];
+  let changed = false;
+
+  for (const logro of LOGROS) {
+    const cumple = logro.evaluar(stats);
+    if (cumple && !nuevoSet.has(logro.id)) {
+      nuevoSet.add(logro.id);
+      nuevosLogros.push(logro);
+      changed = true;
+    } else if (!cumple && nuevoSet.has(logro.id)) {
+      nuevoSet.delete(logro.id);
+      changed = true;
+    }
+  }
+
+  return { nuevoSet, nuevosLogros, changed };
+};
+
 const cargarAchievements = async () => {
   try {
     if (progressDocRef) {
@@ -326,9 +351,8 @@ export default function PaniniAlbum2026() {
     initialAchievementsValidated.current = true;
 
     const stats = calcularStats(completed, playerNames);
-    const nuevosLogros = LOGROS.filter((l) => !achievements.has(l.id) && l.evaluar(stats));
-    if (nuevosLogros.length > 0) {
-      const nuevoSet = new Set([...achievements, ...nuevosLogros.map((l) => l.id)]);
+    const { nuevoSet, changed } = sincronizarLogros(achievements, stats);
+    if (changed) {
       setAchievements(nuevoSet);
       persistirAchievements(nuevoSet);
     }
@@ -534,10 +558,9 @@ export default function PaniniAlbum2026() {
   const evaluarLogros = (nuevoCompleted) => {
     if (!achievementsLoaded) return [];
     const stats = calcularStats(nuevoCompleted, playerNames);
-    const nuevosLogros = LOGROS.filter((l) => !achievements.has(l.id) && l.evaluar(stats));
-    if (nuevosLogros.length === 0) return [];
+    const { nuevoSet, nuevosLogros, changed } = sincronizarLogros(achievements, stats);
+    if (!changed) return [];
 
-    const nuevoSet = new Set([...achievements, ...nuevosLogros.map((l) => l.id)]);
     setAchievements(nuevoSet);
     persistirAchievements(nuevoSet);
 
@@ -654,6 +677,14 @@ export default function PaniniAlbum2026() {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
         if (progressDocRef) {
           try { await setDoc(progressDocRef, { stickers: parsed }, { mergeFields: ['stickers'] }); } catch (_) {}
+        }
+        if (achievementsLoaded) {
+          const stats = calcularStats(parsed, playerNames);
+          const { nuevoSet, changed } = sincronizarLogros(achievements, stats);
+          if (changed) {
+            setAchievements(nuevoSet);
+            persistirAchievements(nuevoSet);
+          }
         }
         setImportMessage('✅ Progreso importado');
         setTimeout(() => setImportMessage(''), 2000);
