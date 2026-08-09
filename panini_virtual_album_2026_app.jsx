@@ -149,7 +149,9 @@ const calcularStats = (completed, players) => {
     return codes.every((code) => isCompletedStickerValue(completed[code]));
   };
 
-  return { pct, equiposCompletos, escudosPegados, estrellasPegadas, seccionCompleta };
+  const stickerPegado = (code) => isCompletedStickerValue(completed[code]);
+
+  return { pct, equiposCompletos, escudosPegados, estrellasPegadas, seccionCompleta, stickerPegado };
 };
 
 const LOGRO_CATEGORIAS = [
@@ -158,6 +160,7 @@ const LOGRO_CATEGORIAS = [
   { id: 'escudos', label: 'Escudos' },
   { id: 'estrellas', label: 'Estrellas' },
   { id: 'campeones', label: 'Campeones del Mundo' },
+  { id: 'especiales', label: 'Logros Especiales' },
 ];
 
 const LOGROS = [
@@ -189,6 +192,9 @@ const LOGROS = [
   { id: 'campeon-ARG', titulo: 'Argentina Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ARG') },
   { id: 'campeon-FRA', titulo: 'Francia Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('FRA') },
   { id: 'campeon-ESP', titulo: 'España Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ESP') },
+
+  // Logros especiales — con mensaje de celebración
+  { id: 'la-cabra', titulo: 'La Cabra', mensaje: 'Te tocó el 10 de Rosario, el que levantó la Copa en Catar, el ídolo del Barcelona, el mejor de la historia.', icono: '🐐', categoria: 'especiales', evaluar: (stats) => stats.stickerPegado('ARG17') },
 ];
 
 const cargarAchievements = async () => {
