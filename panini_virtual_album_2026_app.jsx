@@ -194,7 +194,7 @@ const LOGROS = [
   { id: 'campeon-ESP', titulo: 'España Campeón', mensaje: 'España, la Roja, campeona del mundo en 2010.', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ESP') },
 
   // Logros especiales — con mensaje de celebración
-  { id: 'la-cabra', titulo: 'La Cabra', mensaje: 'Te tocó el 10 de Rosario, el que levantó la Copa en Catar, el ídolo del Barcelona, el mejor de la historia.', icono: '🐐', categoria: 'especiales', evaluar: (stats) => stats.stickerPegado('ARG17') },
+  { id: 'la-cabra', titulo: 'La Cabra', mensaje: 'Te tocó Él. El 10 de Rosario, el que levantó la Copa en Catar, el ídolo del Barcelona, el mejor de la historia.', icono: '🐐', categoria: 'especiales', evaluar: (stats) => stats.stickerPegado('ARG17') },
 ];
 
 // Recalcula el set de logros desbloqueados contra el estado actual del álbum:
