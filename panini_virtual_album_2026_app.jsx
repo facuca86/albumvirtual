@@ -149,7 +149,9 @@ const calcularStats = (completed, players) => {
     return codes.every((code) => isCompletedStickerValue(completed[code]));
   };
 
-  return { pct, equiposCompletos, escudosPegados, estrellasPegadas, seccionCompleta };
+  const stickerPegado = (code) => isCompletedStickerValue(completed[code]);
+
+  return { pct, equiposCompletos, escudosPegados, estrellasPegadas, seccionCompleta, stickerPegado };
 };
 
 const LOGRO_CATEGORIAS = [
@@ -158,6 +160,7 @@ const LOGRO_CATEGORIAS = [
   { id: 'escudos', label: 'Escudos' },
   { id: 'estrellas', label: 'Estrellas' },
   { id: 'campeones', label: 'Campeones del Mundo' },
+  { id: 'especiales', label: 'Logros Especiales' },
 ];
 
 const LOGROS = [
@@ -181,14 +184,17 @@ const LOGROS = [
   { id: 'estrellas-32', titulo: '32 Estrellas', icono: '⭐', categoria: 'estrellas', evaluar: (stats) => stats.estrellasPegadas >= 32 },
   { id: 'estrellas-48', titulo: '48 Estrellas', icono: '⭐', categoria: 'estrellas', evaluar: (stats) => stats.estrellasPegadas >= 48 },
 
-  // Campeones del mundo presentes en el álbum 2026 — sin mensaje
-  { id: 'campeon-URU', titulo: 'Uruguay Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('URU') },
-  { id: 'campeon-GER', titulo: 'Alemania Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('GER') },
-  { id: 'campeon-BRA', titulo: 'Brasil Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('BRA') },
-  { id: 'campeon-ENG', titulo: 'Inglaterra Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ENG') },
-  { id: 'campeon-ARG', titulo: 'Argentina Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ARG') },
-  { id: 'campeon-FRA', titulo: 'Francia Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('FRA') },
-  { id: 'campeon-ESP', titulo: 'España Campeón', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ESP') },
+  // Campeones del mundo presentes en el álbum 2026 — con mensaje de celebración
+  { id: 'campeon-URU', titulo: 'Uruguay Campeón', mensaje: 'Uruguay, la Celeste, bicampeona del mundo (1930 y 1950).', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('URU') },
+  { id: 'campeon-GER', titulo: 'Alemania Campeón', mensaje: 'Alemania, tetracampeona del mundo (1954, 1974, 1990 y 2014).', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('GER') },
+  { id: 'campeon-BRA', titulo: 'Brasil Campeón', mensaje: 'Brasil, pentacampeón del mundo (1958, 1962, 1970, 1994 y 2002).', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('BRA') },
+  { id: 'campeon-ENG', titulo: 'Inglaterra Campeón', mensaje: 'Inglaterra, campeona del mundo en 1966, en su propia casa.', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ENG') },
+  { id: 'campeon-ARG', titulo: 'Argentina Campeón', mensaje: 'Argentina, tricampeona del mundo (1978, 1986 y 2022).', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ARG') },
+  { id: 'campeon-FRA', titulo: 'Francia Campeón', mensaje: 'Francia, bicampeona del mundo (1998 y 2018).', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('FRA') },
+  { id: 'campeon-ESP', titulo: 'España Campeón', mensaje: 'España, la Roja, campeona del mundo en 2010.', icono: '🏆', categoria: 'campeones', evaluar: (stats) => stats.seccionCompleta('ESP') },
+
+  // Logros especiales — con mensaje de celebración
+  { id: 'la-cabra', titulo: 'La Cabra', mensaje: 'Te tocó el 10 de Rosario, el que levantó la Copa en Catar, el ídolo del Barcelona, el mejor de la historia.', icono: '🐐', categoria: 'especiales', evaluar: (stats) => stats.stickerPegado('ARG17') },
 ];
 
 const cargarAchievements = async () => {
@@ -239,7 +245,13 @@ export default function PaniniAlbum2026() {
   const isInitialLoad = useRef(true);
 
   // New feature state
-  const [celebration, setCelebration] = useState(null);
+  // Cola de celebraciones: cuando una misma acción dispara varios festejos
+  // (ej. pegar la última figurita de una selección desbloquea un logro
+  // individual, el cartel de sección completa y el logro de "Campeón"), se
+  // encolan todos y se muestran de a uno para que ninguno se pise con otro.
+  const [celebrationQueue, setCelebrationQueue] = useState([]);
+  const celebration = celebrationQueue[0] ?? null;
+  const closeCelebration = () => setCelebrationQueue((q) => q.slice(1));
   const [justPastedCode, setJustPastedCode] = useState(null);
   const [highlightCode, setHighlightCode] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -517,21 +529,19 @@ export default function PaniniAlbum2026() {
     });
   }, [currentTeam, completed, stickerCount]);
 
+  // Devuelve los logros recién desbloqueados que tienen mensaje (es decir,
+  // los que deben mostrar un cartel de celebración), sin encolar nada todavía.
   const evaluarLogros = (nuevoCompleted) => {
-    if (!achievementsLoaded) return;
+    if (!achievementsLoaded) return [];
     const stats = calcularStats(nuevoCompleted, playerNames);
     const nuevosLogros = LOGROS.filter((l) => !achievements.has(l.id) && l.evaluar(stats));
-    if (nuevosLogros.length === 0) return;
+    if (nuevosLogros.length === 0) return [];
 
     const nuevoSet = new Set([...achievements, ...nuevosLogros.map((l) => l.id)]);
     setAchievements(nuevoSet);
     persistirAchievements(nuevoSet);
 
-    nuevosLogros
-      .filter((l) => l.mensaje)
-      .forEach((l, i) => {
-        setTimeout(() => setCelebration({ type: 'achievement', titulo: l.titulo, mensaje: l.mensaje, icono: l.icono }), 400 + i * 500);
-      });
+    return nuevosLogros.filter((l) => l.mensaje);
   };
 
   const toggleSticker = (code) => {
@@ -546,7 +556,17 @@ export default function PaniniAlbum2026() {
       next = { ...completed, [code]: true };
     }
     setCompleted(next);
-    evaluarLogros(next);
+
+    const toCelebracion = (l) => ({ type: 'achievement', titulo: l.titulo, mensaje: l.mensaje, icono: l.icono });
+    const nuevosLogros = evaluarLogros(next);
+    // Los logros de "Campeón" celebran el mismo hito que el cartel de
+    // sección completa, así que se muestran después de ese cartel a modo de
+    // cierre. El resto de los logros (ligados a la figurita recién pegada,
+    // como "La Cabra") se muestran primero, ya que son la reacción más
+    // inmediata a la acción del usuario.
+    const logrosIndividuales = nuevosLogros.filter((l) => l.categoria !== 'campeones');
+    const logrosCampeon = nuevosLogros.filter((l) => l.categoria === 'campeones');
+    const pendientes = logrosIndividuales.map(toCelebracion);
 
     // Only trigger animations/celebrations when going empty → completed
     if (!current) {
@@ -557,20 +577,25 @@ export default function PaniniAlbum2026() {
       const newCount = Object.entries(next)
         .filter(([c, v]) => !c.startsWith('CC') && isCompletedSticker(v)).length;
       if (newCount === TOTAL_STICKERS) {
-        setTimeout(() => setCelebration({ type: 'album' }), 350);
-        return;
-      }
-
-      // Team completion check (includes Coca-Cola)
-      const teamForCode = getTeamForCode(code);
-      if (teamForCode) {
-        const codes = getTeamCodes(teamForCode);
-        const wasComplete = codes.every(c => isCompletedSticker(completed[c]));
-        const nowComplete = codes.every(c => isCompletedSticker(next[c]));
-        if (nowComplete && !wasComplete) {
-          setTimeout(() => setCelebration({ type: 'team', team: teamForCode }), 350);
+        pendientes.push({ type: 'album' });
+      } else {
+        // Team completion check (includes Coca-Cola)
+        const teamForCode = getTeamForCode(code);
+        if (teamForCode) {
+          const codes = getTeamCodes(teamForCode);
+          const wasComplete = codes.every(c => isCompletedSticker(completed[c]));
+          const nowComplete = codes.every(c => isCompletedSticker(next[c]));
+          if (nowComplete && !wasComplete) {
+            pendientes.push({ type: 'team', team: teamForCode });
+          }
         }
       }
+    }
+
+    pendientes.push(...logrosCampeon.map(toCelebracion));
+
+    if (pendientes.length > 0) {
+      setTimeout(() => setCelebrationQueue((q) => [...q, ...pendientes]), 350);
     }
   };
 
@@ -2165,7 +2190,7 @@ export default function PaniniAlbum2026() {
       {showRepetidasQR && <QRModal url={window.location.origin + window.location.pathname + '?view=repetidas'} onClose={() => setShowRepetidasQR(false)} />}
       {showFaltanQR && <QRModal url={window.location.origin + window.location.pathname + '?view=faltan'} onClose={() => setShowFaltanQR(false)} />}
       {celebration && (
-        <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
+        <CelebrationModal celebration={celebration} onClose={closeCelebration} />
       )}
     </div>
   );
