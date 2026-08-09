@@ -1581,7 +1581,7 @@ export default function PaniniAlbum2026() {
 
         {currentView === 'teams' && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {teams.filter(team => team !== 'FWCI2').map((team) => (
+            {teams.filter(team => team !== 'FWCI2' && team !== 'FWCH2').map((team) => (
               <button
                 key={team}
                 onClick={() => {
