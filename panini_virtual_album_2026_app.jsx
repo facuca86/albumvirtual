@@ -46,6 +46,10 @@ const formatDateTime = (date) => {
   return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+// Porcentaje redondeado a 2 decimales (ej: 33.33), para mostrar precisión con álbumes grandes.
+const calcPercent = (numerator, denominator) => Math.round((numerator / denominator) * 10000) / 100;
+const formatPercent = (value) => value.toFixed(2);
+
 // Entradas guardadas antes de que existieran id/timestamp (versión previa de handleMarkProgress)
 // reciben acá un id/timestamp derivado, de forma determinística, para no perderlas al mergear.
 const parseDateLabel = (label) => {
@@ -131,7 +135,7 @@ const isCompletedStickerValue = (value) => value === true || value === 'repeated
 const calcularStats = (completed, players) => {
   const pegadas = Object.entries(completed)
     .filter(([code, value]) => !code.startsWith('CC') && isCompletedStickerValue(value)).length;
-  const pct = Math.round((pegadas / TOTAL_STICKERS) * 100);
+  const pct = calcPercent(pegadas, TOTAL_STICKERS);
 
   let equiposCompletos = 0;
   let escudosPegados = 0;
@@ -399,7 +403,7 @@ export default function PaniniAlbum2026() {
             return [proyecto.id, {
               pegadas,
               total: proyecto.totalStickers,
-              pct: Math.round((pegadas / proyecto.totalStickers) * 100),
+              pct: calcPercent(pegadas, proyecto.totalStickers),
             }];
           } catch (_) {
             return [proyecto.id, null];
@@ -696,8 +700,8 @@ export default function PaniniAlbum2026() {
 
   const completedCount = Object.entries(completed).filter(([code, value]) => !code.startsWith('CC') && isCompletedSticker(value)).length;
   const repeatedCount = Object.values(completed).filter((value) => isRepeatedSticker(value)).length;
-  const completionPercent = Math.round((completedCount / TOTAL_STICKERS) * 100);
-  const remainingPercent = 100 - completionPercent;
+  const completionPercent = calcPercent(completedCount, TOTAL_STICKERS);
+  const remainingPercent = Math.round((100 - completionPercent) * 100) / 100;
   const remainingCount = Math.max(TOTAL_STICKERS - completedCount, 0);
 
   const handleMarkProgress = async () => {
@@ -890,7 +894,7 @@ export default function PaniniAlbum2026() {
             </p>
 
             <div className={`mt-0.5 sm:mt-2 text-xs sm:text-sm font-black ${darkMode ? 'text-pink-400' : 'text-pink-800'}`}>
-              {completionPercent}% COMPLETADO
+              {formatPercent(completionPercent)}% COMPLETADO
             </div>
 
             <div className={`mt-1 sm:mt-2 h-2 sm:h-2.5 w-24 sm:w-56 rounded-full overflow-hidden ${darkMode ? `bg-[${PAL.borderDark}]` : 'bg-slate-200'}`}>
@@ -1131,7 +1135,7 @@ export default function PaniniAlbum2026() {
                           <div style={{ height: '100%', width: `${progress.pct}%`, backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 2, transition: 'width 0.6s ease' }} />
                         </div>
                         <div style={{ fontSize: 11, marginTop: 3, opacity: 0.85, textAlign: 'right' }}>
-                          {progress.pct}% · {progress.pegadas} pegadas
+                          {formatPercent(progress.pct)}% · {progress.pegadas} pegadas
                         </div>
                       </div>
                     )}
@@ -1146,12 +1150,12 @@ export default function PaniniAlbum2026() {
               if (Object.keys(otrosProyectosProgress).length === 0) return null;
               const otherEntries = Object.values(otrosProyectosProgress).filter(Boolean);
               const allPercents = [completionPercent, ...otherEntries.map(p => p.pct)];
-              const promedio = Math.round(allPercents.reduce((sum, pct) => sum + pct, 0) / allPercents.length);
+              const promedio = Math.round((allPercents.reduce((sum, pct) => sum + pct, 0) / allPercents.length) * 100) / 100;
               const totalPegadas = completedCount + otherEntries.reduce((sum, p) => sum + p.pegadas, 0);
               const totalFaltantes = remainingCount + otherEntries.reduce((sum, p) => sum + (p.total - p.pegadas), 0);
               return (
                 <div className={`mt-6 px-4 py-2.5 rounded-xl text-xs leading-relaxed ${darkMode ? 'bg-white/5 text-white/70' : 'bg-black/5 text-slate-600'}`}>
-                  * Colección completa · {promedio}% promedio · {totalPegadas.toLocaleString()} figuritas pegadas · {totalFaltantes.toLocaleString()} faltantes
+                  * Colección completa · {formatPercent(promedio)}% promedio · {totalPegadas.toLocaleString()} figuritas pegadas · {totalFaltantes.toLocaleString()} faltantes
                 </div>
               );
             })()}
@@ -2142,7 +2146,7 @@ export default function PaniniAlbum2026() {
               <div>
                 <div className="flex justify-between mb-1">
                   <span>Progreso</span>
-                  <span>{completionPercent}%</span>
+                  <span>{formatPercent(completionPercent)}%</span>
                 </div>
                 <div className={`w-full rounded-full h-3 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
                   <div
@@ -2371,8 +2375,8 @@ function ProgressHistoryModal({ history, darkMode, onClose }) {
                 {rows.map((entry) => (
                   <tr key={entry.id ?? entry.dateLabel} className={`border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                     <td className="px-3 py-2 font-black whitespace-nowrap">{entry.dateLabel}</td>
-                    <td className="px-3 py-2 text-right">{entry.percentCompleted}%</td>
-                    <td className="px-3 py-2 text-right">{entry.percentRemaining}%</td>
+                    <td className="px-3 py-2 text-right">{formatPercent(entry.percentCompleted)}%</td>
+                    <td className="px-3 py-2 text-right">{formatPercent(entry.percentRemaining)}%</td>
                     <td className="px-3 py-2 text-right">{entry.completedCount}</td>
                     <td className="px-3 py-2 text-right">{entry.remainingCount}</td>
                   </tr>
