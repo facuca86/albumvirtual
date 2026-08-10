@@ -403,7 +403,7 @@ export default function PaniniAlbum2026() {
             return [proyecto.id, {
               pegadas,
               total: proyecto.totalStickers,
-              pct: calcPercent(pegadas, proyecto.totalStickers),
+              pct: Math.round((pegadas / proyecto.totalStickers) * 100),
             }];
           } catch (_) {
             return [proyecto.id, null];
@@ -1135,7 +1135,7 @@ export default function PaniniAlbum2026() {
                           <div style={{ height: '100%', width: `${progress.pct}%`, backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 2, transition: 'width 0.6s ease' }} />
                         </div>
                         <div style={{ fontSize: 11, marginTop: 3, opacity: 0.85, textAlign: 'right' }}>
-                          {formatPercent(progress.pct)}% · {progress.pegadas} pegadas
+                          {progress.pct}% · {progress.pegadas} pegadas
                         </div>
                       </div>
                     )}
@@ -1150,12 +1150,12 @@ export default function PaniniAlbum2026() {
               if (Object.keys(otrosProyectosProgress).length === 0) return null;
               const otherEntries = Object.values(otrosProyectosProgress).filter(Boolean);
               const allPercents = [completionPercent, ...otherEntries.map(p => p.pct)];
-              const promedio = Math.round((allPercents.reduce((sum, pct) => sum + pct, 0) / allPercents.length) * 100) / 100;
+              const promedio = Math.round(allPercents.reduce((sum, pct) => sum + pct, 0) / allPercents.length);
               const totalPegadas = completedCount + otherEntries.reduce((sum, p) => sum + p.pegadas, 0);
               const totalFaltantes = remainingCount + otherEntries.reduce((sum, p) => sum + (p.total - p.pegadas), 0);
               return (
                 <div className={`mt-6 px-4 py-2.5 rounded-xl text-xs leading-relaxed ${darkMode ? 'bg-white/5 text-white/70' : 'bg-black/5 text-slate-600'}`}>
-                  * Colección completa · {formatPercent(promedio)}% promedio · {totalPegadas.toLocaleString()} figuritas pegadas · {totalFaltantes.toLocaleString()} faltantes
+                  * Colección completa · {promedio}% promedio · {totalPegadas.toLocaleString()} figuritas pegadas · {totalFaltantes.toLocaleString()} faltantes
                 </div>
               );
             })()}
