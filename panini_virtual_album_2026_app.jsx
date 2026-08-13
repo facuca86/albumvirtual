@@ -297,6 +297,7 @@ export default function PaniniAlbum2026() {
   const [showFaltanQR, setShowFaltanQR] = useState(false);
   const [showExportTextFaltan, setShowExportTextFaltan] = useState(false);
   const [progressHistory, setProgressHistory] = useState([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [showProgressHistory, setShowProgressHistory] = useState(false);
   const [progressMessage, setProgressMessage] = useState('');
   const [otrosProyectosProgress, setOtrosProyectosProgress] = useState({});
@@ -440,10 +441,15 @@ export default function PaniniAlbum2026() {
         }
       } catch (_) {}
 
-      let remoteEntries = null;
+      // remoteEntries en [] (no null) cuando el doc no existe o no tiene `entries`:
+      // eso es un estado de nube confirmado (vacío), no una falla de lectura, así
+      // que las entradas locales sí se deben subir para crear/completar el doc.
+      let remoteEntries = [];
+      let cloudReachable = false;
       try {
         if (progressHistoryDocRef) {
           const snap = await getDoc(progressHistoryDocRef);
+          cloudReachable = true;
           if (snap.exists() && Array.isArray(snap.data()?.entries)) {
             remoteEntries = snap.data().entries;
           }
@@ -452,14 +458,12 @@ export default function PaniniAlbum2026() {
         console.error('Error loading progress history from Firestore:', error);
       }
 
-      if (remoteEntries === null) {
-        setProgressHistory(localEntries.map(normalizeHistoryEntry));
-        return;
-      }
-
       const merged = mergeHistoryEntries(localEntries, remoteEntries);
       setProgressHistory(merged);
       try { localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(merged)); } catch (_) {}
+      setHistoryLoaded(true);
+
+      if (!cloudReachable) return;
 
       // Re-sube al proveedor de la nube cualquier registro local (incluidas entradas
       // "legacy" sin id/timestamp) que no haya llegado a Firestore — por ejemplo, un
@@ -724,6 +728,7 @@ export default function PaniniAlbum2026() {
   const remainingCount = Math.max(TOTAL_STICKERS - completedCount, 0);
 
   const handleMarkProgress = async () => {
+    if (!historyLoaded) return;
     const now = new Date();
     const entry = {
       id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -2210,7 +2215,8 @@ export default function PaniniAlbum2026() {
               </button>
               <button
                 onClick={handleMarkProgress}
-                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black"
+                disabled={!historyLoaded}
+                className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black disabled:opacity-50"
               >
                 Marcar Progreso
               </button>
