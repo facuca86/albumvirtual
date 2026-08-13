@@ -272,6 +272,7 @@ export default function PaniniAlbum2026() {
   const [showQR, setShowQR] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const isInitialLoad = useRef(true);
+  const skipNextCloudSave = useRef(false);
 
   // New feature state
   // Cola de celebraciones: cuando una misma acción dispara varios festejos
@@ -305,6 +306,18 @@ export default function PaniniAlbum2026() {
   const initialAchievementsValidated = useRef(false);
 
   useEffect(() => {
+    const loadFromLocal = () => {
+      try {
+        const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (localData) {
+          const parsed = JSON.parse(localData);
+          if (parsed && typeof parsed === 'object') {
+            setCompleted(parsed);
+          }
+        }
+      } catch (_) {}
+    };
+
     const loadProgress = async () => {
       try {
         if (progressDocRef) {
@@ -319,15 +332,15 @@ export default function PaniniAlbum2026() {
           }
         }
 
-        const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (localData) {
-          const parsed = JSON.parse(localData);
-          if (parsed && typeof parsed === 'object') {
-            setCompleted(parsed);
-          }
-        }
+        loadFromLocal();
       } catch (error) {
         console.error('Error loading album progress from Firestore:', error);
+        // No pudimos confirmar el estado real en la nube (red, adblocker, etc.):
+        // mostramos el respaldo local de este dispositivo, pero evitamos que el
+        // próximo guardado lo suba a Firestore, para no pisar progreso ya
+        // sincronizado desde otro dispositivo con datos locales viejos/incompletos.
+        skipNextCloudSave.current = true;
+        loadFromLocal();
       } finally {
         isInitialLoad.current = false;
         setProgressLoaded(true);
@@ -463,6 +476,12 @@ export default function PaniniAlbum2026() {
   useEffect(() => {
     const saveProgress = async () => {
       if (isInitialLoad.current) return;
+
+      if (skipNextCloudSave.current) {
+        skipNextCloudSave.current = false;
+        try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(completed)); } catch (_) {}
+        return;
+      }
 
       // completedCount se guarda ya calculado junto con stickers para que la vista
       // "Otros Proyectos" de otros álbumes no tenga que bajar el mapa completo de
