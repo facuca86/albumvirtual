@@ -119,5 +119,17 @@ export const updateNames = {
   GHA19: 'Prince Adu',
 };
 
-// Códigos de las Updates que Facu ya pegó físicamente. Se completa manualmente.
-export const updatesApplied = [];
+// Códigos de las Updates que Facu ya pegó físicamente.
+export const updatesApplied = [
+  'MEX2',
+  'MEX14',
+  'RSA16',
+  'RSA19',
+  'BRA16',
+  'MAR7',
+  'HAI8',
+  'TUN2',
+  'ESP5',
+  'JOR16',
+  'ENG6',
+];
