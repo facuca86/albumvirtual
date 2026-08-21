@@ -9,24 +9,21 @@
       body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#f3f4f6; }
       #root { min-height: 100vh; }
       .loading { display:flex; align-items:center; justify-content:center; min-height:100vh; color:#374151; }
-
       @keyframes stickerPaste {
-        0%   { transform: scale(1); }
-        35%  { transform: scale(1.18); box-shadow: 0 0 0 5px #4ade80, 0 0 14px #4ade8077; }
-        70%  { transform: scale(1.09); }
+        0% { transform: scale(1); }
+        35% { transform: scale(1.18); box-shadow: 0 0 0 5px #4ade80, 0 0 14px #4ade8077; }
+        70% { transform: scale(1.09); }
         100% { transform: scale(1.02); }
       }
       .sticker-paste { animation: stickerPaste 0.42s cubic-bezier(.22,.68,0,1.2) forwards; position: relative; z-index: 10; }
-
       @keyframes stickerPulse {
         0%, 100% { box-shadow: 0 0 0 3px #f59e0b, 0 0 10px #f59e0b88; }
-        50%       { box-shadow: 0 0 0 7px #fbbf24, 0 0 20px #fbbf24bb; }
+        50% { box-shadow: 0 0 0 7px #fbbf24, 0 0 20px #fbbf24bb; }
       }
       .sticker-pulse { animation: stickerPulse 0.9s ease-in-out infinite; position: relative; z-index: 10; }
-
       @keyframes celebIn {
         from { opacity: 0; transform: scale(0.72) translateY(48px); }
-        to   { opacity: 1; transform: scale(1) translateY(0); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
       }
       .celebrate-card { animation: celebIn 0.48s cubic-bezier(.22,.68,0,1.2) forwards; }
     </style>
@@ -41,14 +38,8 @@
       const reactDomUrl = 'https://esm.sh/react-dom@18.3.1/client';
       const firebaseAppUrl = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
       const firebaseFirestoreUrl = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
       const makeModuleUrl = (code) => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
-
-      const transpile = (source, filename) => Babel.transform(source, {
-        filename,
-        presets: [['react', { runtime: 'classic' }], 'typescript'],
-        sourceType: 'module'
-      }).code;
+      const transpile = (source, filename) => Babel.transform(source, { filename, presets: [['react', { runtime: 'classic' }], 'typescript'], sourceType: 'module' }).code;
 
       const firebaseSrc = await fetch('./firebase.js').then((r) => r.text());
       const firebasePatched = firebaseSrc
@@ -77,7 +68,7 @@
         .replace(/from\s+['"]\.\/playerNames(?:\.js)?['"]/g, `from '${playerNamesUrl}'`)
         .replace(/from\s+['"]\.\/teamThemes(?:\.js)?['"]/g, `from '${teamThemesUrl}'`)
         .replace(/from\s+['"]\.\/albumConfig_2026(?:\.js)?['"]/g, `from '${albumConfigUrl}'`)
-        .replace("import { albumConfig } from '" + albumConfigUrl + "';", "import { albumConfig } from '" + albumConfigUrl + "';\nimport { updateNames, updatesApplied } from '" + updateDataUrl + "';")
+        .replace("import { albumConfig } from '" + albumConfigUrl + "';", "import { albumConfig } from '" + albumConfigUrl + "';\nimport { updateNames } from '" + updateDataUrl + "';")
         .replace("const teams = albumConfig.teams;", "const teams = [...albumConfig.teams, 'UPDATES'];")
         .replace("const teamData = albumConfig.teamData;", "const teamData = { ...albumConfig.teamData, UPDATES: { name: 'Update Set', federation: 'Panini Update Set', flag: '🔄' } };")
         .replace("const REAL_TEAMS = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA');", "const REAL_TEAMS = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA' && team !== 'UPDATES');")
@@ -85,20 +76,18 @@
         .replace("const stickerCount = currentTeam.startsWith('FWCI') ? STICKERS_FWCI : currentTeam.startsWith('FWCH') ? STICKERS_FWCH : currentTeam === 'COCA' ? STICKERS_COCA : STICKERS_TEAM;", "const stickerCount = currentTeam === 'UPDATES' ? Object.keys(updateNames).length : currentTeam.startsWith('FWCI') ? STICKERS_FWCI : currentTeam.startsWith('FWCH') ? STICKERS_FWCH : currentTeam === 'COCA' ? STICKERS_COCA : STICKERS_TEAM;")
         .replace("const selectionTeams = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA');", "const selectionTeams = teams.filter((team) => !team.startsWith('FWC') && team !== 'COCA' && team !== 'UPDATES');")
         .replace("if (currentTeam === 'COCA') {\n      setCurrentView('home');\n      return;\n    }", "if (currentTeam === 'UPDATES') {\n      setCurrentView('home');\n      return;\n    }\n    if (currentTeam === 'COCA') {\n      setCurrentTeamIndex((prev) => prev + 1);\n      return;\n    }")
-        .replace("{currentView === 'album' && (", "{currentView === 'album' && currentTeam === 'UPDATES' && (\n          <div className={`rounded-3xl p-4 sm:p-8 shadow-xl ${getTeamGradientClass('UPDATES')}`}>\n            <div className=\"hidden lg:flex justify-between items-center mb-8 gap-4\">\n              <button onClick={prevTeam} className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] text-white border border-[${PAL.borderDarkAlt}]` : 'bg-white text-black'}`}>← ANTERIOR</button>\n              <div className=\"text-center\"><h2 className=\"text-3xl sm:text-5xl font-black italic uppercase text-slate-800\">UPDATE SET</h2><div className=\"mt-2 text-sm uppercase tracking-[0.25em] text-slate-500\">118 UPDATES · COLECCIÓN FÍSICA</div></div>\n              <button onClick={nextTeam} className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] text-white border border-[${PAL.borderDarkAlt}]` : 'bg-white text-black'}`}>SIGUIENTE →</button>\n            </div>\n            <div className=\"lg:hidden flex items-center gap-3 mb-4 px-3 py-2 bg-black/20 rounded-2xl\"><span className=\"text-3xl leading-none\">🔄</span><div className=\"flex-1 min-w-0\"><div className=\"font-black italic uppercase text-base leading-none text-white truncate\">UPDATE SET</div><div className=\"text-[10px] text-white/75 uppercase tracking-widest mt-0.5\">118 UPDATES</div></div></div>\n            <div className={`overflow-hidden rounded-[2rem] border-4 p-3 sm:p-5 ${darkMode ? `border-[${PAL.borderDark}] bg-[${PAL.surfaceCardDark}]` : 'border-slate-200 bg-white'}`}>\n              <div className=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 max-h-[72vh] overflow-y-auto pr-1\">\n                {Object.entries(updateNames).map(([code, updateName]) => {\n                  const team = getTeamForCode(code);\n                  const originalName = getPlayerNameForCode(code, team);\n                  const applied = updatesApplied.includes(code);\n                  return <div key={code} className=\"rounded-xl px-3 py-2 border-2 bg-green-100 border-green-500 text-slate-800 flex items-center gap-2 min-h-[52px]\">\n                    <span className=\"text-[10px] sm:text-xs font-black text-slate-500 w-14 shrink-0\">{code}</span>\n                    <div className=\"min-w-0 leading-tight\">\n                      <div className={`text-xs sm:text-sm uppercase ${applied ? 'font-black' : 'font-semibold'}`}>{updateName}{applied ? ' 🔄' : ''}</div>\n                      <div className=\"text-[9px] sm:text-[10px] text-slate-400 truncate\">{originalName}</div>\n                    </div>\n                  </div>;\n                })}\n              </div>\n            </div>\n          </div>\n        )}\n\n        {currentView === 'album' && currentTeam !== 'UPDATES' && (")
-        .replace("const animClass = justPasted ? 'sticker-paste' : highlighted ? 'sticker-pulse' : '';", "const animClass = justPasted ? 'sticker-paste' : highlighted ? 'sticker-pulse' : '';\n  const hasUpdate = updatesApplied.includes(sticker.code) && updateNames[sticker.code];\n  const originalLabel = sticker.displayLabel || sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`;\n  const mainLabel = hasUpdate ? updateNames[sticker.code] : originalLabel;")
+        .replace("{currentView === 'album' && (", "{currentView === 'album' && currentTeam === 'UPDATES' && (\n          <div className={`rounded-3xl p-4 sm:p-8 shadow-xl ${getTeamGradientClass('UPDATES')}`}>\n            <div className=\"hidden lg:flex justify-between items-center mb-8 gap-4\">\n              <button onClick={prevTeam} className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] text-white border border-[${PAL.borderDarkAlt}]` : 'bg-white text-black'}`}>← ANTERIOR</button>\n              <div className=\"text-center\"><h2 className=\"text-3xl sm:text-5xl font-black italic uppercase text-slate-800\">UPDATE SET</h2><div className=\"mt-2 text-sm uppercase tracking-[0.25em] text-slate-500\">118 UPDATES · COLECCIÓN FÍSICA</div></div>\n              <button onClick={nextTeam} className={`rounded-full px-6 py-3 shadow font-bold italic transition-colors duration-300 ${darkMode ? `bg-[${PAL.surfaceDark}] text-white border border-[${PAL.borderDarkAlt}]` : 'bg-white text-black'}`}>SIGUIENTE →</button>\n            </div>\n            <div className=\"lg:hidden flex items-center gap-3 mb-4 px-3 py-2 bg-black/20 rounded-2xl\"><span className=\"text-3xl leading-none\">🔄</span><div className=\"flex-1 min-w-0\"><div className=\"font-black italic uppercase text-base leading-none text-white truncate\">UPDATE SET</div><div className=\"text-[10px] text-white/75 uppercase tracking-widest mt-0.5\">118 UPDATES</div></div></div>\n            <div className={`overflow-hidden rounded-[2rem] border-4 p-3 sm:p-5 ${darkMode ? `border-[${PAL.borderDark}] bg-[${PAL.surfaceCardDark}]` : 'border-slate-200 bg-white'}`}>\n              <div className=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 max-h-[72vh] overflow-y-auto pr-1\">\n                {Object.entries(updateNames).map(([code, updateName]) => {\n                  const team = getTeamForCode(code);\n                  const originalName = getPlayerNameForCode(code, team);\n                  const applied = completed[code] === true || completed[code] === 'repeated';\n                  return <div key={code} className=\"rounded-xl px-3 py-2 border-2 bg-green-100 border-green-500 text-slate-800 flex items-center gap-2 min-h-[52px]\">\n                    <span className=\"text-[10px] sm:text-xs font-black text-slate-500 w-14 shrink-0\">{code}</span>\n                    <div className=\"min-w-0 leading-tight\">\n                      <div className={`text-xs sm:text-sm uppercase ${applied ? 'font-black' : 'font-semibold'}`}>{updateName}{applied ? ' 🔄' : ''}</div>\n                      <div className=\"text-[9px] sm:text-[10px] text-slate-400 truncate\">{originalName}</div>\n                    </div>\n                  </div>;\n                })}\n              </div>\n            </div>\n          </div>\n        )}\n\n        {currentView === 'album' && currentTeam !== 'UPDATES' && (")
+        .replace("const animClass = justPasted ? 'sticker-paste' : highlighted ? 'sticker-pulse' : '';", "const animClass = justPasted ? 'sticker-paste' : highlighted ? 'sticker-pulse' : '';\n  const hasUpdate = Boolean(updateNames[sticker.code]) && (sticker.completed || sticker.repeated);\n  const originalLabel = sticker.displayLabel || sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`;\n  const mainLabel = hasUpdate ? updateNames[sticker.code] : originalLabel;")
         .replace("{sticker.displayLabel || sticker.label || labels[sticker.type] || `Jugador ${sticker.id}`}", "{mainLabel}\n          {hasUpdate && <div className=\"mt-1 text-[8px] sm:text-[10px] normal-case font-semibold text-slate-400\">{originalLabel} 🔄</div>}")
         .replace("{currentView === 'album' && (\n        <div className={`lg:hidden fixed bottom-0", "{currentView === 'album' && currentTeam !== 'UPDATES' && (\n        <div className={`lg:hidden fixed bottom-0")
       ;
 
       const appUrl = makeModuleUrl(transpile(appPatched, 'panini_virtual_album_2026_app.jsx'));
-
       const [{ default: PaniniAlbum2026 }, { createRoot }, React] = await Promise.all([
         import(appUrl),
         import(reactDomUrl),
         import(reactUrl)
       ]);
-
       createRoot(document.getElementById('root')).render(React.createElement(PaniniAlbum2026));
     </script>
   </body>
