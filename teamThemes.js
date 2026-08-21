@@ -11,7 +11,6 @@ export const teamThemes = {
   MAR: { gradient: "from-red-500 via-red-400 to-green-500" },
   HAI: { gradient: "from-blue-600 via-white to-red-500" },
   SCO: { gradient: "from-blue-600 via-white to-slate-400" },
-
   USA: { gradient: "from-blue-600 via-blue-400 to-red-500" },
   PAR: { gradient: "from-red-500 via-white to-blue-600" },
   AUS: { gradient: "from-blue-600 via-yellow-400 to-blue-500" },
@@ -24,7 +23,6 @@ export const teamThemes = {
   JPN: { gradient: "from-white via-red-500 to-blue-600" },
   SWE: { gradient: "from-blue-600 via-yellow-400 to-blue-500" },
   TUN: { gradient: "from-white via-red-500 to-red-600" },
-
   BEL: { gradient: "from-slate-900 via-yellow-400 to-red-500", dark: true },
   EGY: { gradient: "from-red-500 via-white to-slate-900", dark: true },
   IRN: { gradient: "from-green-500 via-white to-red-500" },
@@ -37,7 +35,6 @@ export const teamThemes = {
   SEN: { gradient: "from-green-500 via-yellow-400 to-red-500" },
   IRQ: { gradient: "from-red-500 via-white to-slate-900", dark: true },
   NOR: { gradient: "from-red-600 via-white to-blue-600" },
-
   ARG: { gradient: "from-sky-500 via-sky-200 to-sky-400" },
   ALG: { gradient: "from-green-500 via-white to-red-500" },
   AUT: { gradient: "from-red-600 via-white to-red-500" },
@@ -50,7 +47,6 @@ export const teamThemes = {
   CRO: { gradient: "from-red-500 via-white to-blue-600" },
   GHA: { gradient: "from-red-500 via-yellow-400 to-green-500" },
   PAN: { gradient: "from-white via-red-500 to-blue-600" },
-
-  // especiales
+  UPDATES: { gradient: "from-red-500 via-blue-600 to-green-500" },
   FWCINTRO: { gradient: "from-yellow-500 via-blue-900 to-yellow-600", dark: true }
 };
