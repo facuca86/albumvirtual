@@ -1,6 +1,6 @@
 # Album Virtual Panini - FIFA World Cup 2026
 
-Aplicación web para gestionar tu colección de figuritas del Mundial FIFA 2026. Controla cuáles tienes, cuáles te faltan y cuáles están repetidas, todo desde el navegador sin necesidad de instalar nada.
+Aplicación web para gestionar tu colección de figuritas del Mundial FIFA 2026. Controla cuáles tienes, cuáles te faltan y  cuáles están repetidas, todo desde el navegador sin necesidad de instalar nada.
 
 ---
 
